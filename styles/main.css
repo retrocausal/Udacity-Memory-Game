@@ -1,0 +1,68 @@
+* {
+  font-size: medium;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  font-family: "Montserrat",sans-serif;
+}
+
+BODY {
+  background-color: rgba(0,0,0,0.75);
+  margin: auto;
+  padding: auto;
+  width: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: larger;
+  text-align: center;
+  color: #edd8d8;
+  font-variant: small-caps;
+  font-variant-caps: petite-caps;
+  line-height: 1.5;
+  letter-spacing: 0.25rem;
+  font-family: "Cinzel Decorative",cursive ,sans-serif;
+  width: 100%;
+}
+
+h1 {
+  font-size: xx-large;
+}
+
+h2 {
+  font-size: x-large;
+}
+
+main {
+  display: flex;
+  width: 100%;
+  margin: auto;
+  justify-content: space-around;
+}
+
+.breathe {
+  line-height: 5;
+  width: 100%;
+}
+
+.breath::before,
+.breathe::after {
+  content: "\00A0";
+}
+
+.deck {
+  width: 100%;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
+}
+
+.card {
+  width: 25%;
+}

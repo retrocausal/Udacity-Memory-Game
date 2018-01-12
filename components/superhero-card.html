@@ -1,0 +1,82 @@
+<link rel="import" href="superhero-styles.html">
+<dom-module id="superhero-card">
+  <template id="card">
+    <custom-style>
+      <style media="screen" is="custom-style" include="superhero-styles"></style>
+    </custom-style>
+    <article class="superhero">
+      <section class="cover-image">
+        <figure>
+          <picture>
+            <source srcset="{{superhero.cover.src}}-medium.{{superhero.cover.format}} 600w,
+{{superhero.cover.src}}-large.{{superhero.cover.format}} 960w,
+{{superhero.cover.src}}-small.{{superhero.cover.format}} 480w" media="(max-width:764px)" sizes="30vw">
+            <source
+              srcset="{{superhero.cover.src}}-medium.{{superhero.cover.format}} 640w,
+{{superhero.cover.src}}-large.{{superhero.cover.format}} 960w,
+{{superhero.cover.src}}-x-large.{{superhero.cover.format}} 1280w"
+              media="(min-width:765px)"
+              sizes="calc((90vw) / 4)">
+            <source
+              srcset="{{superhero.cover.src}}-large.{{superhero.cover.format}} 960w,
+{{superhero.cover.src}}-xx-large.{{superhero.cover.format}} 1600w,
+{{superhero.cover.src}}-x-large.{{superhero.cover.format}} 1280w"
+              media="(min-width:1280px)"
+              sizes="calc((90vw) / 4)">
+            <img class="superhero-cover" src="[[superhero.cover.src]]-small.{{superhero.cover.format}}" alt="">
+          </picture>
+          <figcaption>
+            <h2>[[superhero.name]]</h2>
+          </figcaption>
+        </figure>
+      </section>
+    </article>
+  </template>
+  <script>
+    class superheroCard extends Polymer.Element {
+      constructor(...oSuperHero) {
+        super();
+        const [superhero] = oSuperHero;
+        if (superhero) {
+          this.superhero = superhero;
+        }
+        //console.log(this.flipped, this.superhero);
+      }
+      static get is() {
+        return "superhero-card";
+      }
+      static get properties() {
+        return {
+          superhero: {
+            type: Object,
+            value: {
+              alterEgo: "Kal El",
+              city: "Metropolis",
+              cover: {
+                src: "superman",
+                format: "jpg"
+              },
+              rearCover: {
+                src: "dcuniverse",
+                format: "jpg"
+              },
+              powers: [],
+              superPowers: [],
+              name: "Superman",
+              origin: "Krypton"
+            }
+          },
+          flipped: {
+            type: Boolean,
+            value: false
+          }
+        };
+      }
+      ready() {
+        super.ready();
+        console.log(this.superhero);
+      }
+    }
+    window.customElements.define(superheroCard.is, superheroCard);
+  </script>
+</dom-module>

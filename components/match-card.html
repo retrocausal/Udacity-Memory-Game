@@ -1,0 +1,40 @@
+<dom-module id="match-card">
+  <template id="superhero-match-card">
+    <style media="screen">
+      :host {
+        box-shadow: 0 0 10px 0 #333;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+      h2 {
+        font-size: xx-large;
+      }
+    </style>
+    <article class="match-card">
+      <section class="alter-ego">
+        <h2>[[alias]]</h2>
+      </section>
+    </article>
+  </template>
+  <script>
+    class matchCard extends Polymer.Element {
+      constructor(alias) {
+        super();
+        this.alias = alias;
+      }
+      static get is() {
+        return "match-card";
+      }
+      static properties() {
+        return {
+          alias: {
+            type: String
+          }
+        };
+      }
+    }
+    window.customElements.define(matchCard.is, matchCard);
+  </script>
+</dom-module>
