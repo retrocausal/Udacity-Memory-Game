@@ -109,16 +109,32 @@ Superhero.prototype.createTradeCards = function () {
  */
 const Slot = function () {
   this.slots = [];
+  this.assetSrc = "./bundle/responsive-assets/jpegs/";
 };
 Slot.prototype.push = function (content, hash) {
   const order = this.slots.length || 0;
-  return this.slots.push({
-    content: content,
-    order: order,
-    hash: hash,
-    flippedContent: "<div></div>",
-    id: "slot" + order
+  const flippedContent = new flipCard({
+    name: "DC Universe",
+    cover: {
+      src: this.assetSrc + "dcuniverse",
+      format: "jpg"
+    }
   });
+  const currentContent = "rear";
+  const id = "slot" + order;
+  let card = {
+    content,
+    order,
+    hash,
+    currentContent,
+    flippedContent,
+    id
+  };
+  const toggle = function () {
+    return card.currentContent = (card.currentContent == "rear") ? "main" : "rear";
+  };
+  card.toggle = toggle;
+  return this.slots.push(card);
 };
 Slot.prototype.getSlots = function () {
   return this.slots;
@@ -173,27 +189,99 @@ SuperHeroMindMap.prototype.build = function () {
     this.slot.push(match, hash);
     this.superHeroes[name] = superhero;
   }
+  return this.slots = this.shuffleDeck();
+};
+
+SuperHeroMindMap.prototype.layout = function (container) {
+  const oContainer = $(container);
+  const width = oContainer.width();
+  for (const slot of this.slot.slots) {
+    const card = $("<article></article>");
+    card.attr("id", slot.id)
+      .html(slot.flippedContent)
+      .addClass("card")
+      .css({
+        "order": slot.order
+      })
+      .hide()
+      .fadeIn(3000);
+    oContainer.append(card);
+  }
+  return this.oContainer = oContainer;
+};
+
+SuperHeroMindMap.prototype.activateCards = function () {
+  this.reset();
+  const oContainer = this.oContainer;
+  const cards = oContainer.find("article.card");
+  cards.click((eCard) => {
+    const id = eCard.delegateTarget.id;
+    const card = $("#" + id);
+    const slot = this.slots[id];
+    const hash = slot.hash;
+    const animationCss = {
+      "background": "red",
+      "height": "toggle"
+    };
+    //if card already matched, or, if the same card clicked, do nothing
+    if (this.slotsMatched.indexOf(id) >= 0 || id == this.currentMatchableId) {
+      return false;
+    }
+    //if the card is not matched with a pair, or, if a different card clicked, inspect
+    else {
+      //flip the card, count one move
+      this.flip(card, slot);
+      this.moves++;
+      //if odd move, store the to be matched hash
+      if ((this.moves % 2) != 0) {
+        this.currentMatchableHash = hash;
+        this.currentMatchableId = id;
+      }
+      //if the move is even, compare and act
+      else {
+        const prevCard = $("#" + this.currentMatchableId);
+        const prevSlot = this.slots[this.currentMatchableId];
+        if (hash === this.currentMatchableHash) {
+          this.slotsMatched.push(this.currentMatchableId);
+          this.slotsMatched.push(id);
+        } else {
+          card.effect("shake");
+          prevCard.effect("shake");
+          setTimeout(() => {
+            this.flip(card, slot);
+            this.flip(prevCard, prevSlot)
+          }, 1000);
+
+        }
+        this.currentMatchableId = "";
+        this.currentMatchableHash = "";
+      }
+    }
+    console.log(this.slotsMatched, this.moves);
+  });
+};
+SuperHeroMindMap.prototype.reset = function () {
+  this.currentMatchableHash = "";
+  this.moves = 0;
+  this.slotsMatched = [];
+  this.currentMatchableId = "";
+}
+SuperHeroMindMap.prototype.shuffleDeck = function () {
+  this.slots = {};
   const slots = this.slot.shuffleSlots();
   for (const slot of slots) {
     this.slots[slot.id] = slot;
   }
   return this.slots;
-};
+}
+SuperHeroMindMap.prototype.flip = function (card, slot) {
+  console.log(card);
+  const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
+  const content = slot[toggledContent];
+  card.fadeOut("slow", function () {
+    card.empty()
+      .fadeIn("slow")
+      .append(content);
+  });
 
-SuperHeroMindMap.prototype.layout = function (container) {
-  const ceil = this.slots.length;
-  const cols = 4;
-  const rows = ceil / cols;
-  const oContainer = $("." + container);
-  const width = oContainer.width();
-  for (const slot of this.slot.slots) {
-    const card = $("<article></article>");
-    card.attr("id", slot.id)
-      .html(slot.content)
-      .addClass("card")
-      .css({
-        "order": slot.order
-      });
-    oContainer.append(card);
-  }
 };

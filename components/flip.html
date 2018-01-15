@@ -1,0 +1,59 @@
+<dom-module id="flip-card">
+  <template id="flipcover-flip-card">
+    <custom-style>
+      <style media="screen" is="custom-style" include="card-styler"></style>
+      <style media="screen">
+        h2 {
+          font-family: "Quicksand",sans-serif;
+        }
+      </style>
+    </custom-style>
+    <article class="flip-card">
+      <div class="breathe"></div>
+      <section class="rear">
+        <figure>
+          <picture>
+            <source srcset="{{flipcover.cover.src}}-medium.{{flipcover.cover.format}} 600w,
+{{flipcover.cover.src}}-large.{{flipcover.cover.format}} 960w,
+{{flipcover.cover.src}}-small.{{flipcover.cover.format}} 480w" media="(max-width:764px)" sizes="25vw">
+            <source
+              srcset="{{flipcover.cover.src}}-medium.{{flipcover.cover.format}} 640w,
+{{flipcover.cover.src}}-large.{{flipcover.cover.format}} 960w,
+{{flipcover.cover.src}}-x-large.{{flipcover.cover.format}} 1280w"
+              media="(min-width:765px)"
+              sizes="calc((83vw) / 4)">
+            <source
+              srcset="{{flipcover.cover.src}}-large.{{flipcover.cover.format}} 960w,
+{{flipcover.cover.src}}-xx-large.{{flipcover.cover.format}} 1600w,
+{{flipcover.cover.src}}-x-large.{{flipcover.cover.format}} 1280w"
+              media="(min-width:1020px)"
+              sizes="calc((75vw) / 6)">
+            <img class="flipcover-cover responsive-cover-image-portrait" src="[[flipcover.cover.src]]-small.{{flipcover.cover.format}}" alt="">
+          </picture>
+          <figcaption>
+            <h2>[[flipcover.name]]</h2>
+          </figcaption>
+        </figure>
+      </section>
+    </article>
+  </template>
+  <script>
+    class flipCard extends Polymer.Element {
+      constructor(flipcover) {
+        super();
+        this.flipcover = flipcover;
+      }
+      static get is() {
+        return "flip-card";
+      }
+      static properties() {
+        return {
+          flipcover: {
+            type: Object
+          }
+        };
+      }
+    }
+    window.customElements.define(flipCard.is, flipCard);
+  </script>
+</dom-module>

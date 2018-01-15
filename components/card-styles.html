@@ -1,0 +1,98 @@
+<dom-module id="card-styler">
+  <template id="card-styles">
+    <style media="screen">
+      :host {
+        box-shadow: 0 0 10px 0 #333;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .flip-card,
+      .match-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .breathe {
+        min-height: 0.5rem;
+        font-size: x-large;
+        width: 100%;
+      }
+      .alter-ego,
+      .rear {
+        width: 100%;
+      }
+      .responsive-cover-image-portrait {
+        max-width: 100%;
+        min-height: calc((9/16)*(100vw / 3));
+        max-height: calc((9/16)*(100vw / 3));
+        height: calc((9/16)*(100vw / 3));
+        object-fit: contain;
+      }
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      figure {
+        min-width: 100%;
+        max-width: 100%;
+        margin: 1rem auto 0.25rem;
+      }
+      figcaption {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        text-align: center;
+        width: 100%;
+      }
+      .caption {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+      }
+      h2 {
+        text-align: center;
+        height: 2rem;
+        font-size: medium;
+        margin: 0;
+        line-height: 1;
+        font-family: "Cinzel Decorative",cursive,sans-serif;
+      }
+      @media screen and (min-width:765px) {
+        .responsive-cover-image-portrait {
+          min-height: calc((9/16)*(83vw / 4));
+          height: calc((9/16)*(83vw / 4));
+          max-height: calc((9/16)*(83vw / 4));
+        }
+        h2 {
+          font-size: larger;
+          height: 2.5rem;
+        }
+      }
+
+      @media screen and (min-width:1020px) {
+        .responsive-cover-image-portrait {
+          min-height: calc((9/16)*(75vw / 6));
+          height: calc((9/16)*(75vw / 6));
+          max-height: calc((9/16)*(75vw / 6));
+        }
+        figcaption {
+          justify-content: center;
+        }
+        h2 {
+          font-size: large;
+          height: 3rem;
+          padding: 0 0.25rem;
+        }
+      }
+    </style>
+
+  </template>
+</dom-module>
