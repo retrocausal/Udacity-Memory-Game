@@ -5,25 +5,26 @@
       <style media="screen" is="custom-style" include="superhero-styles"></style>
     </custom-style>
     <article class="superhero">
-      <section class="cover-image">
+      <div class="breathe"></div>
+      <section class="cover-image responsive-cover-image">
         <figure>
           <picture>
             <source srcset="{{superhero.cover.src}}-medium.{{superhero.cover.format}} 600w,
 {{superhero.cover.src}}-large.{{superhero.cover.format}} 960w,
-{{superhero.cover.src}}-small.{{superhero.cover.format}} 480w" media="(max-width:764px)" sizes="30vw">
+{{superhero.cover.src}}-small.{{superhero.cover.format}} 480w" media="(max-width:764px)" sizes="25vw">
             <source
               srcset="{{superhero.cover.src}}-medium.{{superhero.cover.format}} 640w,
 {{superhero.cover.src}}-large.{{superhero.cover.format}} 960w,
 {{superhero.cover.src}}-x-large.{{superhero.cover.format}} 1280w"
               media="(min-width:765px)"
-              sizes="calc((90vw) / 4)">
+              sizes="calc((83vw) / 4)">
             <source
               srcset="{{superhero.cover.src}}-large.{{superhero.cover.format}} 960w,
 {{superhero.cover.src}}-xx-large.{{superhero.cover.format}} 1600w,
 {{superhero.cover.src}}-x-large.{{superhero.cover.format}} 1280w"
-              media="(min-width:1280px)"
-              sizes="calc((90vw) / 4)">
-            <img class="superhero-cover" src="[[superhero.cover.src]]-small.{{superhero.cover.format}}" alt="">
+              media="(min-width:1020px)"
+              sizes="calc((75vw) / 6)">
+            <img class="superhero-cover responsive-cover-image-portrait" src="[[superhero.cover.src]]-small.{{superhero.cover.format}}" alt="">
           </picture>
           <figcaption>
             <h2>[[superhero.name]]</h2>
@@ -74,7 +75,7 @@
       }
       ready() {
         super.ready();
-        console.log(this.superhero);
+        //console.log(this.superhero);
       }
     }
     window.customElements.define(superheroCard.is, superheroCard);

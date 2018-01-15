@@ -10,7 +10,7 @@
 BODY {
   background-color: rgba(0,0,0,0.75);
   margin: auto;
-  padding: auto;
+  padding: inherit;
   width: auto;
 }
 
@@ -44,6 +44,7 @@ main {
   width: 100%;
   margin: auto;
   justify-content: space-around;
+  flex-direction: column;
 }
 
 .breathe {
@@ -60,9 +61,34 @@ main {
   width: 100%;
   margin: auto;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
 }
 
 .card {
-  width: 25%;
+  width: 33.33%;
+  min-width: 33.33%;
+  max-width: 33.33%;
+}
+@media screen and (min-width:765px) {
+  .deck {
+    width: 83vw;
+  }
+
+  .card {
+    width: 25%;
+    min-width: 25%;
+    max-width: 25%;
+  }
+}
+@media screen and (min-width:1020px) {
+  .deck {
+    width: 75vw;
+  }
+
+  .card {
+    width: calc(75vw / 6);
+    min-width: calc(75vw / 6);
+    max-width: calc(75vw / 6);
+  }
 }

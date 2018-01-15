@@ -92,7 +92,14 @@ Superhero.prototype.getMatch = function () {
 };
 Superhero.prototype.createTradeCards = function () {
   this.card = new superheroCard(this);
-  this.match = new matchCard(this.alterEgo);
+  const superhero = {
+    alias: this.alterEgo,
+    cover: {
+      src: this.assetSrc + "justiceleague",
+      format: "jpg"
+    }
+  };
+  this.match = new matchCard(superhero);
 };
 
 
@@ -139,7 +146,7 @@ Slot.prototype.shuffleSlots = function () {
  ********** config : Replacement for the default argument list. The first param is assumed to be the configuration
  parameter. This is ideally an array of hero objects
  */
-const Game = function (...config) {
+const SuperHeroMindMap = function (...config) {
   const [heroes] = config;
   this.heroes = heroes;
   this.superHeroes = {};
@@ -150,7 +157,7 @@ const Game = function (...config) {
  **@ method build
  **@ description builds superheroes on the fly, assigns them to available slots on the game grid
  */
-Game.prototype.build = function () {
+SuperHeroMindMap.prototype.build = function () {
   //For All Heroes, in the Game, build a superhero object on the fly
   for (const hero of this.heroes) {
     const name = hero.name.replace(/ /g, "")
@@ -173,7 +180,7 @@ Game.prototype.build = function () {
   return this.slots;
 };
 
-Game.prototype.layout = function (container) {
+SuperHeroMindMap.prototype.layout = function (container) {
   const ceil = this.slots.length;
   const cols = 4;
   const rows = ceil / cols;
@@ -182,7 +189,7 @@ Game.prototype.layout = function (container) {
   for (const slot of this.slot.slots) {
     const card = $("<article></article>");
     card.attr("id", slot.id)
-      .html(slot.flippedContent)
+      .html(slot.content)
       .addClass("card")
       .css({
         "order": slot.order
@@ -190,101 +197,3 @@ Game.prototype.layout = function (container) {
     oContainer.append(card);
   }
 };
-/*
- **@name game
- **@description start a game
- */
-const game = (() => {
-  // create game
-  const heroes = [
-    {
-      name: "Superman",
-      alterEgo: "Kal El",
-      powers: ["Freeze Breath", "Heat Vision", "Superhuman Strength", "Superhuman Speed", "Flight", "Xray Vision", "Superhuman Hearing", "Telepathy"],
-      origin: "Krypton",
-      city: "Metropolis"
-    },
-    {
-      name: "Batman",
-      alterEgo: "Bruce Wayne",
-      powers: ["Genius Level Intelligence", "Peak Human Strength", "Martial Arts", "Hand to Hand Combat", "Detective Abilities", "Bleeding edge Technology"],
-      origin: "Earth-Two",
-      city: "Gotham"
-    },
-    {
-      name: "Supergirl",
-      alterEgo: "Kara Zor El",
-      powers: ["Freeze Breath", "Heat Vision", "Superhuman Strength", "Superhuman Speed", "Flight", "Xray Vision", "Superhuman Hearing"],
-      origin: "Krypton",
-      city: "National City"
-    },
-    {
-      name: "The Flash",
-      alterEgo: "Barry Allen",
-      powers: ["Superhuman Speed", "Agility", "Intelligence", "Time travel"],
-      origin: "Earth-X/One",
-      city: "Central City"
-    },
-    {
-      name: "Martian Man Hunter",
-      alterEgo: "Jonn Jonzz",
-      powers: ["Telepathy", "Superhuman Strength", "Shape Shifting"],
-      origin: "Mars",
-      City: "National City"
-    },
-    {
-      name: "Wonder Woman",
-      alterEgo: "Princess Diana of Themyscira",
-      powers: ["Lasso of Truth", "Superhuman Strength", "Flight", "Longevity"],
-      origin: "New Earth",
-      city: "Themyscira"
-    },
-    {
-      name: "Aquaman",
-      alterEgo: "Orin",
-      powers: ["Telepathy", "Superhuman Strength"],
-      origin: "Earth-Three",
-      city: "Atlantis"
-    },
-    {
-      name: "Cyborg",
-      alterEgo: "Vic Stone",
-      powers: ["Superhuman Speed", "Superhuman Strength", "Flight"],
-      origin: "Earth-Twentythree",
-      city: "Central City"
-    },
-    {
-      name: "Green Arrow",
-      alterEgo: "Ollie Queen",
-      powers: ["Archery"],
-      origin: "Earth-Thirty",
-      city: "Star City"
-    },
-    {
-      name: "Green Lantern",
-      alterEgo: "Hal Jordan",
-      powers: ["Force Fields", "Flight"],
-      origin: "Oa",
-      city: "Coast City"
-    },
-    {
-      name: "The Atom",
-      alterEgo: "Ray Palmer",
-      powers: ["Hand to Hand Combat", "Subatomic Existance"],
-      origin: "Earth-Eleven",
-      city: "Ivy Town"
-    },
-    {
-      name: "Black Canary",
-      alterEgo: "Laurel Lance",
-      powers: ["Sonic Scream", "Martial Arts"],
-      origin: "New Earth",
-      city: "Gotham"
-    }
-  ];
-  const oGame = new Game(heroes);
-  oGame.build();
-  oGame.layout("deck");
-  return oGame;
-})();
-console.log(game);
