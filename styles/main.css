@@ -70,8 +70,53 @@ main {
   min-width: 33.33%;
   max-width: 33.33%;
 }
+
+.instructions,
+.move-counter,
+.player-rating,
+.replay-game {
+  margin: 1rem auto;
+  font-family: "Quicksand",sans-serif;
+  text-align: left;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  margin: auto;
+}
+
+.moves,
+.ratings,
+.replay {
+  width: 33.33%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.move {
+  margin: 1rem auto;
+  text-align: left;
+}
+
+.rating,
+.restart {
+  margin: 1rem auto;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.reload,
+.star {
+  color: whitesmoke;
+  margin: 1.2rem 0;
+  cursor: pointer;
+}
 @media screen and (min-width:765px) {
-  .deck {
+  .deck,
+  .meta {
     width: 83vw;
   }
 
@@ -82,7 +127,8 @@ main {
   }
 }
 @media screen and (min-width:1020px) {
-  .deck {
+  .deck,
+  .meta {
     width: 75vw;
   }
 

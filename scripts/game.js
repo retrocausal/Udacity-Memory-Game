@@ -204,7 +204,7 @@ SuperHeroMindMap.prototype.layout = function (container) {
         "order": slot.order
       })
       .hide()
-      .fadeIn(3000);
+      .fadeIn("slow");
     oContainer.append(card);
   }
   return this.oContainer = oContainer;
@@ -219,16 +219,31 @@ SuperHeroMindMap.prototype.activateCards = function () {
     const card = $("#" + id);
     const slot = this.slots[id];
     const hash = slot.hash;
-    const animationCss = {
-      "background": "red",
-      "height": "toggle"
+    const shake = () => {
+      const prevCard = $("#" + this.currentMatchableId);
+      const prevSlot = this.slots[this.currentMatchableId];
+      prevCard.children()
+        .effect("shake", {
+          times: 5,
+          distance: 5,
+          direction: "left"
+        }, "fast");
+      card.children()
+        .effect("shake", {
+          times: 5,
+          distance: 5,
+          direction: "left"
+        }, "fast", () => {
+          this.flip(prevCard, prevSlot);
+          this.flip(card, slot);
+        });
+      this.currentMatchableId = "";
+      this.currentMatchableHash = "";
     };
-    //if card already matched, or, if the same card clicked, do nothing
-    if (this.slotsMatched.indexOf(id) >= 0 || id == this.currentMatchableId) {
-      return false;
-    }
-    //if the card is not matched with a pair, or, if a different card clicked, inspect
-    else {
+    //if card already matched, or, if the same card clicked, set exit condition to do nothing
+    const exitCondition = (this.slotsMatched.indexOf(id) >= 0 || id == this.currentMatchableId);
+    //if the card is not matched with a pair, or, if a different card clicked, continue to inspect a possible match
+    if (!exitCondition) {
       //flip the card, count one move
       this.flip(card, slot);
       this.moves++;
@@ -239,25 +254,15 @@ SuperHeroMindMap.prototype.activateCards = function () {
       }
       //if the move is even, compare and act
       else {
-        const prevCard = $("#" + this.currentMatchableId);
-        const prevSlot = this.slots[this.currentMatchableId];
         if (hash === this.currentMatchableHash) {
           this.slotsMatched.push(this.currentMatchableId);
           this.slotsMatched.push(id);
         } else {
-          card.effect("shake");
-          prevCard.effect("shake");
-          setTimeout(() => {
-            this.flip(card, slot);
-            this.flip(prevCard, prevSlot)
-          }, 1000);
-
+          setTimeout(shake, 29);
         }
-        this.currentMatchableId = "";
-        this.currentMatchableHash = "";
       }
     }
-    console.log(this.slotsMatched, this.moves);
+    return this.rate();
   });
 };
 SuperHeroMindMap.prototype.reset = function () {
@@ -275,13 +280,25 @@ SuperHeroMindMap.prototype.shuffleDeck = function () {
   return this.slots;
 }
 SuperHeroMindMap.prototype.flip = function (card, slot) {
-  console.log(card);
   const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
   const content = slot[toggledContent];
-  card.fadeOut("slow", function () {
-    card.empty()
-      .fadeIn("slow")
-      .append(content);
-  });
 
+  const flip = function () {
+    card.empty()
+      .append(content)
+      .fadeIn(5, reveal);
+  }
+  const reveal = function () {
+    card.children()
+      .fadeIn(5);
+  }
+  return card.children()
+    .stop()
+    .hide(5, flip);
+
+};
+SuperHeroMindMap.prototype.rate = function () {
+  const moveCounter = $(".move");
+  return moveCounter.empty()
+    .append(`<span>${this.moves}</span>`);
 };

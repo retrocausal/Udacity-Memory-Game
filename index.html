@@ -17,12 +17,34 @@
     <header>
       <div class="breathe"></div>
       <h1>The Super Hero Mind Map</h1>
-      <div class="breathe"></div>
     </header>
     <main>
-      <section class="deck"></section>
-      <div class="breathe"></div>
+      <section class="deck">
+        <h3 class="instructions">Instructions</h3>
+      </section>
     </main>
+    <aside class="meta">
+      <section class="moves">
+        <h3 class="move-counter">On Move:</h3>
+        <h3 class="move"></h3>
+      </section>
+      <section class="ratings">
+        <h3 class="player-rating">Player Rating:</h3>
+        <div class="rating">
+          <span class="fa fa-star star"></span>
+          <span class="fa fa-star star"></span>
+          <span class="fa fa-star star"></span>
+          <span class="fa fa-star star"></span>
+          <span class="fa fa-star star"></span>
+        </div>
+      </section>
+      <section class="replay">
+        <h3 class="replay-game">Replay Game:</h3>
+        <div class="restart">
+          <span class="fa fa-redo-alt reload"></span>
+        </div>
+      </section>
+    </aside>
     <footer>
       <script src="./bower_components/webcomponentsjs/webcomponents-lite.js"></script>
       <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
@@ -30,6 +52,7 @@
       <link rel="import" href="components/superhero-card.html">
       <link rel="import" href="components/match-card.html">
       <link rel="import" href="components/flip.html">
+      <script src="./scripts/jquery-ui.min.js"></script>
       <script src="./scripts/game.js"></script>
       <script src="./scripts/config.js"></script>
       <script src="./scripts/ready.js"></script>
