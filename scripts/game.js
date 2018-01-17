@@ -150,6 +150,7 @@ Slot.prototype.shuffleSlots = function () {
       newOrder = Math.floor(Math.random() * (ceil - floor + 1)) + floor;
     }
     slot.order = newOrder;
+    slot.currentContent = "rear";
     slotsTaken.push(newOrder);
   }
   return this.slots;
@@ -194,23 +195,36 @@ SuperHeroMindMap.prototype.build = function () {
 
 SuperHeroMindMap.prototype.layout = function (container) {
   const oContainer = $(container);
-  const width = oContainer.width();
-  for (const slot of this.slot.slots) {
-    const card = $("<article></article>");
-    card.attr("id", slot.id)
-      .html(slot.flippedContent)
-      .addClass("card")
-      .css({
-        "order": slot.order
-      })
-      .hide()
-      .fadeIn("slow");
-    oContainer.append(card);
-  }
-  return this.oContainer = oContainer;
+  this.oContainer = oContainer;
+  const reload = $(".reload");
+  reload.click(() => {
+    return this.restart();
+  });
+  return this.addCards(false);
 };
 
-SuperHeroMindMap.prototype.activateCards = function () {
+SuperHeroMindMap.prototype.addCards = function (reload) {
+  for (const slot of this.slot.slots) {
+    const card = $("<article class='card'></article>");
+    card.attr("id", slot.id)
+      .empty()
+      .append(slot.flippedContent)
+      .css({
+        order: slot.order,
+        display: "block"
+      });
+    this.oContainer.append(card);
+  }
+  const width = this.oContainer.width();
+  const height = this.oContainer.height();
+  const canvas = {
+    width,
+    height
+  };
+  this.oCanvas = canvas;
+};
+
+SuperHeroMindMap.prototype.activate = function () {
   this.reset();
   const oContainer = this.oContainer;
   const cards = oContainer.find("article.card");
@@ -247,8 +261,9 @@ SuperHeroMindMap.prototype.activateCards = function () {
       //flip the card, count one move
       this.flip(card, slot);
       this.moves++;
+      const oddMove = ((this.moves % 2) != 0);
       //if odd move, store the to be matched hash
-      if ((this.moves % 2) != 0) {
+      if (oddMove) {
         this.currentMatchableHash = hash;
         this.currentMatchableId = id;
       }
@@ -262,7 +277,8 @@ SuperHeroMindMap.prototype.activateCards = function () {
         }
       }
     }
-    return this.rate();
+    this.showMoves();
+    return ((this.matchesComplete) ? this.finish() : this.rate());
   });
 };
 SuperHeroMindMap.prototype.reset = function () {
@@ -270,6 +286,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.moves = 0;
   this.slotsMatched = [];
   this.currentMatchableId = "";
+  this.matchesComplete = false;
 }
 SuperHeroMindMap.prototype.shuffleDeck = function () {
   this.slots = {};
@@ -277,28 +294,68 @@ SuperHeroMindMap.prototype.shuffleDeck = function () {
   for (const slot of slots) {
     this.slots[slot.id] = slot;
   }
+  console.log(this.slots);
   return this.slots;
 }
 SuperHeroMindMap.prototype.flip = function (card, slot) {
   const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
   const content = slot[toggledContent];
 
-  const flip = function () {
-    card.empty()
-      .append(content)
-      .fadeIn(5, reveal);
-  }
   const reveal = function () {
     card.children()
-      .fadeIn(5);
+      .each(function () {
+        $(this)
+          .fadeIn(5)
+      });
   }
-  return card.children()
-    .stop()
-    .hide(5, flip);
-
+  const flip = function () {
+    card.empty()
+      .append(content);
+    return reveal();
+  }
+  card.children()
+    .each(function () {
+      $(this)
+        .fadeOut(5)
+    });
+  return flip();
 };
 SuperHeroMindMap.prototype.rate = function () {
+  const moves = this.moves;
+  const matches = this.slotsMatched.length / 2;
+  return true;
+};
+SuperHeroMindMap.prototype.finish = function () {
+  return true;
+};
+SuperHeroMindMap.prototype.showMoves = function () {
   const moveCounter = $(".move");
   return moveCounter.empty()
-    .append(`<span>${this.moves}</span>`);
+    .append(`<span class="move-count">${this.moves}</span>`);
+
+};
+SuperHeroMindMap.prototype.restart = function () {
+  const shuffle = $("<div class='shuffle'><h1><span class='fa fa-redo fa-spin fa-3x'></span></h1></div>'");
+  this.oContainer.children()
+    .each(function () {
+      return this.remove();
+    });
+  this.oContainer.css({
+      "min-height": this.oCanvas.height
+    })
+    .append(shuffle);
+  const relayoutDeck = () => {
+    this.oContainer.empty();
+    setTimeout(() => {
+      return this.oContainer.css({
+        "min-height": 0
+      });
+    }, 200);
+    this.shuffleDeck();
+    this.shuffleDeck();
+    this.shuffleDeck();
+    this.addCards(true);
+    this.activate();
+  };
+  setTimeout(relayoutDeck, 3000);
 };

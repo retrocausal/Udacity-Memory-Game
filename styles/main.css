@@ -57,9 +57,17 @@ main {
   content: "\00A0";
 }
 
-.deck {
+.deck-space {
   width: 100%;
   margin: auto;
+}
+
+.deck,
+.instructions {
+  width: 100%;
+}
+
+.deck {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
@@ -71,17 +79,9 @@ main {
   max-width: 33.33%;
 }
 
-.instructions,
-.move-counter,
-.player-rating,
-.replay-game {
-  margin: 1rem auto;
-  font-family: "Quicksand",sans-serif;
-  text-align: left;
-}
-
 .meta {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
   align-items: center;
   width: 100%;
@@ -91,31 +91,63 @@ main {
 .moves,
 .ratings,
 .replay {
-  width: 33.33%;
   display: flex;
   justify-content: space-around;
-}
-
-.move {
   margin: 1rem auto;
-  text-align: left;
 }
 
+.move,
+.move-counter,
+.player-rating,
 .rating,
+.replay-game,
 .restart {
-  margin: 1rem auto;
+  width: 50%;
+  text-align: center;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+  font-family: "Quicksand",sans-serif;
+  margin: 1rem 0 0;
+  align-items: center;
 }
 
+.move-count,
 .reload,
 .star {
   color: whitesmoke;
-  margin: 1.2rem 0;
   cursor: pointer;
+  line-height: 0;
+  text-align: left;
+}
+
+.move-count {
+  font-weight: bold;
+  font-size: large;
+}
+
+.shuffle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+A,
+A:hover,
+A:visited {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+flip-card,
+match-card,
+superhero-card {
+  display: inline-block !important;
 }
 @media screen and (min-width:765px) {
-  .deck,
+  .deck-space,
   .meta {
     width: 83vw;
   }
@@ -125,9 +157,17 @@ main {
     min-width: 25%;
     max-width: 25%;
   }
+
+  .moves,
+  .ratings,
+  .replay {
+    width: 33.33%;
+    max-width: 33.33%;
+    min-width: 33.33%;
+  }
 }
 @media screen and (min-width:1020px) {
-  .deck,
+  .deck-space,
   .meta {
     width: 75vw;
   }
