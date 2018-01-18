@@ -193,13 +193,14 @@ SuperHeroMindMap.prototype.build = function () {
   return this.slots = this.shuffleDeck();
 };
 
-SuperHeroMindMap.prototype.layout = function (container) {
-  const oContainer = $(container);
+SuperHeroMindMap.prototype.layout = function () {
+  const oContainer = $(".deck");
   this.oContainer = oContainer;
   const reload = $(".reload");
   reload.click(() => {
     return this.restart();
   });
+  this.modalContainer = $(".notify-modals");
   return this.addCards(false);
 };
 
@@ -222,6 +223,18 @@ SuperHeroMindMap.prototype.addCards = function (reload) {
     height
   };
   this.oCanvas = canvas;
+};
+
+SuperHeroMindMap.prototype.deActivate = function () {
+  const oContainer = this.oContainer;
+  const cards = oContainer.find("article.card");
+  cards.off("click");
+  cards.children()
+    .off("click");
+  oContainer.click((eContainer) => {
+    const notifications = [false, false, true, "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below"];
+    return this.notify(...notifications);
+  });
 };
 
 SuperHeroMindMap.prototype.activate = function () {
@@ -272,6 +285,7 @@ SuperHeroMindMap.prototype.activate = function () {
         if (hash === this.currentMatchableHash) {
           this.slotsMatched.push(this.currentMatchableId);
           this.slotsMatched.push(id);
+          this.moveOnLastMatch = this.moves;
         } else {
           setTimeout(shake, 29);
         }
@@ -284,9 +298,14 @@ SuperHeroMindMap.prototype.activate = function () {
 SuperHeroMindMap.prototype.reset = function () {
   this.currentMatchableHash = "";
   this.moves = 0;
+  this.matches = 0;
+  this.moveOnLastMatch = 0;
   this.slotsMatched = [];
   this.currentMatchableId = "";
   this.matchesComplete = false;
+  this.ratingDip = 0;
+  this.modalContainer.empty();
+  this.oContainer.off("click");
 }
 SuperHeroMindMap.prototype.shuffleDeck = function () {
   this.slots = {};
@@ -294,7 +313,6 @@ SuperHeroMindMap.prototype.shuffleDeck = function () {
   for (const slot of slots) {
     this.slots[slot.id] = slot;
   }
-  console.log(this.slots);
   return this.slots;
 }
 SuperHeroMindMap.prototype.flip = function (card, slot) {
@@ -323,7 +341,53 @@ SuperHeroMindMap.prototype.flip = function (card, slot) {
 SuperHeroMindMap.prototype.rate = function () {
   const moves = this.moves;
   const matches = this.slotsMatched.length / 2;
-  return true;
+  const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
+  const matchesRemaining = cardsAvailable / 2;
+
+  /*
+   **    C1 C2 C3 C4
+   ** C1  X  1  2  3
+   ** C2  4  X  5  6
+   ** C3  7  8  X  9
+   ** C4  10 11 12 X
+   */
+  const uniqueCombinations = cardsAvailable * (cardsAvailable - 1);
+  const deltaMoves = moves - this.moveOnLastMatch;
+  const deltaMatches = matches - this.matches;
+  const maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / 2));
+  const deltaHigh = ((deltaMatches == 0) && (deltaMoves >= maxMovesDelta));
+  const onEvenMove = (this.moves % 2 == 0 && true);
+  this.matches = matches;
+  const rating = $(".rating");
+  if (deltaHigh && onEvenMove) {
+    const star = rating.find("svg:first-child");
+    star.remove();
+    this.ratingDip++;
+  }
+  if (this.ratingDip > 4) {
+    const notify = () => {
+      this.oContainer.effect("shake", {
+        times: 5,
+        direction: "right"
+      }, "fast", () => {
+        this.deActivate();
+        const notifications = [false, false, true, "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below"];
+        return this.notify(...notifications);
+      });
+    };
+    setTimeout(notify, 120);
+  }
+};
+SuperHeroMindMap.prototype.notify = function (...notifications) {
+  this.modalContainer.empty();
+  const [err, success, CongratulatoryMessage, message] = notifications;
+  const notifyCard = document.createElement("notify-card");
+  const errAttributed = (err && true) ? notifyCard.setAttribute("err", err) : err;
+  const successAttributed = (success && true) ? notifyCard.setAttribute("success", success) : success;
+  const cmesgAttributed = (CongratulatoryMessage && true) ? notifyCard.setAttribute("cmesg", CongratulatoryMessage) : CongratulatoryMessage;
+  //const messageAttributed = (message && true) ? notfiyCard.setAttribute("message", message) : message;
+  notifyCard.innerHTML = message;
+  this.modalContainer.append(notifyCard);
 };
 SuperHeroMindMap.prototype.finish = function () {
   return true;
@@ -335,7 +399,7 @@ SuperHeroMindMap.prototype.showMoves = function () {
 
 };
 SuperHeroMindMap.prototype.restart = function () {
-  const shuffle = $("<div class='shuffle'><h1><span class='fa fa-redo fa-spin fa-3x'></span></h1></div>'");
+  const shuffle = $('<div class="shuffle"><h1><span class="fa fa-redo fa-spin fa-3x"></span></h1></div>');
   this.oContainer.children()
     .each(function () {
       return this.remove();
@@ -344,6 +408,15 @@ SuperHeroMindMap.prototype.restart = function () {
       "min-height": this.oCanvas.height
     })
     .append(shuffle);
+  if (0 < this.ratingDip) {
+    const rating = $(".rating");
+    let star;
+    while (0 < this.ratingDip) {
+      star = $('<span class="fa fa-star star"></span>');
+      rating.append(star);
+      this.ratingDip--;
+    }
+  }
   const relayoutDeck = () => {
     this.oContainer.empty();
     setTimeout(() => {

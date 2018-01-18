@@ -1,0 +1,102 @@
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<dom-module id="notify-card">
+  <template id="pop-up">
+    <style media="screen">
+      .main {
+        font-size: larger;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+      }
+      .cmesg,
+      .error,
+      .success {
+        text-align: center;
+      }
+      h2 {
+        font-size: x-large;
+        text-align: center;
+      }
+    </style>
+    <section class="modal">
+      <paper-dialog class="modal-dialog" id="modal-dialog" alwaysontop="alwaysOnTop" modal="modal">
+        <section class="header">
+          <h2>Super Hero Mind Map Alert</h2>
+        </section>
+        <section class="main">
+          <template is="dom-if" if="{{err}}">
+            <div class="error">
+              <p>
+                <h2>
+                  <slot></slot>
+                </h2>
+              </p>
+            </div>
+          </template>
+          <template is="dom-if" if="{{success}}">
+            <div class="success">
+              <p>
+                <h2>
+                  <slot></slot>
+                </h2>
+              </p>
+            </div>
+          </template>
+          <template is="dom-if" if="{{cmesg}}">
+            <div class="cmesg">
+              <p>
+                <h2>
+                  <slot></slot>
+                </h2>
+              </p>
+            </div>
+          </template>
+        </section>
+        <section class="footer">
+          <div class="buttons">
+            <paper-button dialog-confirm="dialog-confirm" autofocus="autofocus" raised="raised">OK</paper-button>
+          </div>
+        </section>
+      </paper-dialog>
+    </section>
+  </template>
+  <script>
+    class notifyCard extends Polymer.Element {
+      constructor() {
+        super();
+      }
+      ready() {
+        super.ready();
+        console.log(this);
+      }
+      static get is() {
+        return "notify-card";
+      }
+      static get properties() {
+        return {
+          err: {
+            type: Boolean
+          },
+          info: {
+            type: Boolean
+          },
+          cmesg: {
+            type: Boolean
+          },
+          message: {
+            type: String,
+            value: ""
+          }
+        };
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        const modal = this.root.querySelector("#modal-dialog");
+        modal.center();
+        modal.open();
+      }
+    }
+    window.customElements.define(notifyCard.is, notifyCard);
+  </script>
+</dom-module>
