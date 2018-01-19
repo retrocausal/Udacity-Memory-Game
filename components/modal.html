@@ -1,61 +1,124 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <dom-module id="notify-card">
   <template id="pop-up">
     <style media="screen">
-      .main {
-        font-size: larger;
+      :host {
+        box-shadow: 0 0 10px 0 #333;
         display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
         justify-content: space-around;
-        align-items: center;
+        width: 100%;
+        margin: 0;
+        padding: 1em;
       }
       .cmesg,
       .error,
       .success {
         text-align: center;
+        padding: 0 !important;
       }
       h2 {
-        font-size: x-large;
+        font-size: large;
         text-align: center;
+        width: 100%;
+        font-family: "Quicksand",sans-serif;
+      }
+      .errHeader,
+      .heading,
+      .successHeader {
+        font-size: x-large;
+      }
+      .errHeader {
+        color: red;
+      }
+      .successHeader {
+        color: #819d8c;
+        font-weight: bold;
+      }
+      .grandHeader,
+      .thumbsUp {
+        font-size: xx-large;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+      .main {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        line-height: 2;
+      }
+      .buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+      }
+      .thumbsUp {
+        font-size: 5rem;
+        margin: 1rem auto;
+      }
+      :host > ::slotted(*) {
+        padding: 0 1em;
+      }
+      paper-dialog,
+      paper-dialog-scrollable {
+        width: 83vw;
+        min-width: 81vw;
+        min-height: 300px;
       }
     </style>
     <section class="modal">
       <paper-dialog class="modal-dialog" id="modal-dialog" alwaysontop="alwaysOnTop" modal="modal">
         <section class="header">
-          <h2>Super Hero Mind Map Alert</h2>
+          <h2 class="heading">Super Hero Mind Map</h2>
         </section>
         <section class="main">
           <template is="dom-if" if="{{err}}">
-            <div class="error">
-              <p>
+            <paper-dialog-scrollable>
+              <div class="error">
+                <h2 class="errHeader">Alert !</h2>
                 <h2>
                   <slot></slot>
                 </h2>
-              </p>
-            </div>
+              </div>
+            </paper-dialog-scrollable>
+            <slot></slot>
           </template>
           <template is="dom-if" if="{{success}}">
-            <div class="success">
-              <p>
+            <paper-dialog-scrollable>
+              <div class="success">
+                <h2 class="successHeader">Success !!</h2>
                 <h2>
                   <slot></slot>
                 </h2>
-              </p>
-            </div>
+              </div>
+            </paper-dialog-scrollable>
+            <slot></slot>
           </template>
           <template is="dom-if" if="{{cmesg}}">
-            <div class="cmesg">
-              <p>
+            <paper-dialog-scrollable>
+              <div class="cmesg">
+                <h2 class="grandHeader">Congratulations!</h2>
+                <h2 class="thumbsUp">
+                  👍 &#128077; &#128077;
+                </h2>
                 <h2>
                   <slot></slot>
                 </h2>
-              </p>
-            </div>
+              </div>
+            </paper-dialog-scrollable>
+            <slot></slot>
           </template>
         </section>
         <section class="footer">
           <div class="buttons">
-            <paper-button dialog-confirm="dialog-confirm" autofocus="autofocus" raised="raised">OK</paper-button>
+            <paper-button class="button" dialog-confirm="dialog-confirm" autofocus="autofocus" raised="raised">OK</paper-button>
           </div>
         </section>
       </paper-dialog>

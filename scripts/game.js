@@ -466,7 +466,7 @@ SuperHeroMindMap.prototype.rate = function () {
         direction: "right"
       }, "fast", () => {
         this.deActivate();
-        const notifications = [false, false, true, "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below"];
+        const notifications = [true, false, false, "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below"];
         return this.notify(...notifications);
       });
     };
@@ -504,7 +504,7 @@ SuperHeroMindMap.prototype.showMoves = function () {
 };
 SuperHeroMindMap.prototype.restart = function () {
   //Create a visually engaging spinning wheel
-  const shuffle = $('<div class="shuffle"><h1><span class="fa fa-redo fa-spin fa-3x"></span></h1></div>');
+  const shuffle = $('<div class="shuffle"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   //Empty the Deck
   this.oContainer.children()
     .each(function () {
