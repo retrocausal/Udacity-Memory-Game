@@ -347,6 +347,8 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         this.slotsMatched.push(id);
         //Set a Rating parameter to determine how many moves were made since the last match
         this.moveOnLastMatch = this.moves;
+        //Grade or aggregate points per match
+        this.score();
       } else {
         //flips take about 10 ms each,
         // two cards flipped equals 20ms
@@ -474,6 +476,31 @@ SuperHeroMindMap.prototype.rate = function () {
     //Then, NOTFIY
     setTimeout(notify, 120);
   }
+  //define a menu of scoring parameters
+  const scoreMenu = {
+    deltaHigh,
+    deltaMoves,
+    maxMovesDelta
+  };
+  return this.scoreMenu = scoreMenu;
+};
+SuperHeroMindMap.prototype.score = function () {
+  const maxPointsPerMatch = 25;
+  let delta = 0;
+  let pointsThisMatch = 0;
+  let scoreThisMatch = 0;
+  const dip = 5 - this.ratingDip;
+  if (this.scoreMenu.deltaHigh) {
+    delta = this.scoreMenu.deltaMoves - this.scoreMenu.maxMovesDelta;
+    pointsThisMatch = maxPointsPerMatch - delta;
+    scoreThisMatch = dip * (pointsThisMatch / this.ratingDip);
+  } else {
+    delta = this.scoreMenu.maxMovesDelta - this.scoreMenu.deltaMoves;
+    pointsThisMatch = maxPointsPerMatch;
+    scoreThisMatch = (dip * pointsThisMatch) + delta;
+  }
+  scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
+  console.log(scoreThisMatch);
 };
 SuperHeroMindMap.prototype.notify = function (...notifications) {
   //Empty any stale Notification modals
