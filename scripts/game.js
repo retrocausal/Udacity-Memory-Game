@@ -374,7 +374,14 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         //Grade or aggregate points per match
         const score = this.score();
         setTimeout(() => {
-          return puffScore(score);
+          puffScore(score);
+          const oScoreContainer = $(".total-user-points");
+          const scoreText = `<h1 class="total-user-score">${this.userScore}</h1>`;
+          setTimeout(() => {
+            return oScoreContainer.empty()
+              .append(scoreText)
+              .effect("bounce");
+          }, 500);
         }, 10);
       } else {
         //flips take about 10 ms each,
