@@ -224,6 +224,8 @@ SuperHeroMindMap.prototype.layout = function () {
   this.oContainer = oContainer;
   //Initialize the notification box
   this.oModalContainer = $(".notify-modals");
+  //Initialize the scores container
+  this.oScoreContainer = $(".total-user-score");
   //Iteratively Add Slots with self contained cards to the flex deck
   return this.addCards();
 };
@@ -375,13 +377,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         const score = this.score();
         setTimeout(() => {
           puffScore(score);
-          const oScoreContainer = $(".total-user-points");
-          const scoreText = `<h1 class="total-user-score">${this.userScore}</h1>`;
-          setTimeout(() => {
-            return oScoreContainer.empty()
-              .append(scoreText)
-              .effect("bounce");
-          }, 500);
+          return this.showScores();
         }, 10);
       } else {
         //flips take about 10 ms each,
@@ -390,11 +386,12 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         setTimeout(onMismatch, 29);
       }
     }
+    //on each click of a crad on deck, display the moves completed
+    this.showMoves();
+    //on each click, rate the user based on moves, matches
+    return this.rate();
   }
-  //on each click of a crad on deck, display the moves completed
-  this.showMoves();
-  //on each click, rate the user based on moves, matches
-  return this.rate();
+  return false;
 };
 SuperHeroMindMap.prototype.reset = function () {
   // reset match check params
@@ -409,6 +406,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.moveOnLastMatch = 0;
   //reset score
   this.userScore = 0;
+  this.oScoreContainer.empty();
   //remove stale modal dialogs
   this.oModalContainer.empty();
   this.notificationMsg = "";
@@ -570,6 +568,14 @@ SuperHeroMindMap.prototype.showMoves = function () {
   return moveCounter.empty()
     .append(`<span class="move-count">${this.moves}</span>`);
 
+};
+SuperHeroMindMap.prototype.showScores = function () {
+  const scoreText = `${this.userScore}`;
+  setTimeout(() => {
+    return this.oScoreContainer.empty()
+      .append(scoreText)
+      .effect("bounce");
+  }, 500);
 };
 SuperHeroMindMap.prototype.restart = function () {
   //Create a visually engaging spinning wheel
