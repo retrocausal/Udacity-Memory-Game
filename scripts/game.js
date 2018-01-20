@@ -324,6 +324,30 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     this.currentMatchableId = "";
     this.currentMatchableHash = "";
   };
+  const puffScore = (score) => {
+    $(".puff-of-score")
+      .remove();
+    const prevCard = $("#" + this.currentMatchableId);
+    const prevSlot = this.slots[this.currentMatchableId];
+    const oScoreContainer = $('<div class="puff-of-score"></div>');
+    $("BODY")
+      .append(oScoreContainer);
+    const scoreText = `<h1 class="current-score">+${score}</h1>`;
+    oScoreContainer.empty();
+    card.children()
+      .effect("puff");
+    prevCard.children()
+      .effect("puff");
+    return oScoreContainer.html(scoreText)
+      .effect("scale")
+      .effect("transfer", {
+        to: $('.points')
+      }, 200, () => {
+        return oScoreContainer.toggle("explode", {}, 100, () => {
+          return oScoreContainer.remove();
+        });
+      });
+  };
   //if card already matched, or, if the same card clicked, set exit condition to do nothing
   const exitCondition = (this.slotsMatched.indexOf(id) >= 0 || id == this.currentMatchableId);
   //if the card is not matched with a pair, or, if a different card clicked, continue to inspect a possible match
@@ -348,7 +372,10 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         //Set a Rating parameter to determine how many moves were made since the last match
         this.moveOnLastMatch = this.moves;
         //Grade or aggregate points per match
-        this.score();
+        const score = this.score();
+        setTimeout(() => {
+          return puffScore(score);
+        }, 10);
       } else {
         //flips take about 10 ms each,
         // two cards flipped equals 20ms
@@ -495,17 +522,19 @@ SuperHeroMindMap.prototype.score = function () {
   let pointsThisMatch = 0;
   let scoreThisMatch = 0;
   const currentRating = 5 - this.ratingDip;
+  const dip = (this.ratingDip > 0) ? this.ratingDip : 1;
   if (this.scoreMenu.deltaHigh) {
     delta = this.scoreMenu.deltaMoves - this.scoreMenu.maxMovesDelta;
     pointsThisMatch = maxPointsPerMatch - delta;
-    scoreThisMatch = currentRating * (pointsThisMatch / this.ratingDip);
+    scoreThisMatch = currentRating * (pointsThisMatch / dip);
   } else {
     delta = this.scoreMenu.maxMovesDelta - this.scoreMenu.deltaMoves;
     pointsThisMatch = maxPointsPerMatch;
     scoreThisMatch = (currentRating * pointsThisMatch) + delta;
   }
   scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
-  console.log(scoreThisMatch);
+  this.userScore += scoreThisMatch;
+  return scoreThisMatch;
 };
 SuperHeroMindMap.prototype.notify = function (category) {
   //Empty any stale Notification modals

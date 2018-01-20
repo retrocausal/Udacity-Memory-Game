@@ -89,6 +89,7 @@ main {
 }
 
 .moves,
+.points,
 .ratings,
 .replay {
   display: flex;
@@ -101,7 +102,9 @@ main {
 .player-rating,
 .rating,
 .replay-game,
-.restart {
+.restart,
+.total-user-points,
+.user-points {
   width: 50%;
   text-align: center;
   display: flex;
@@ -113,11 +116,11 @@ main {
 
 .move-count,
 .reload,
-.star {
+.star,
+.total-user-points {
   color: whitesmoke;
   cursor: pointer;
   line-height: 0;
-  text-align: left;
 }
 
 .move-count {
@@ -146,6 +149,18 @@ match-card,
 superhero-card {
   display: inline-block !important;
 }
+
+.puff-of-score {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  max-width: 150px;
+}
+
+.ui-effects-transfer {
+  border: 3px dotted whitesmoke;
+  border-radius: 100px;
+}
 @media screen and (min-width:765px) {
   .deck-space,
   .meta {
@@ -159,16 +174,21 @@ superhero-card {
   }
 
   .moves,
+  .points,
   .ratings,
   .replay {
-    width: 33.33%;
-    max-width: 33.33%;
-    min-width: 33.33%;
+    width: 50%;
+    max-width: 50%;
+    min-width: 50%;
   }
 
   .shuffle {
     justify-content: center;
     margin-top: -50%;
+  }
+
+  .reload {
+    margin-top: 0.51rem;
   }
 }
 @media screen and (min-width:1020px) {
@@ -185,5 +205,14 @@ superhero-card {
 
   .shuffle {
     margin-top: -25%;
+  }
+
+  .moves,
+  .points,
+  .ratings,
+  .replay {
+    width: 33.33%;
+    max-width: 33.33%;
+    min-width: 33.33%;
   }
 }
