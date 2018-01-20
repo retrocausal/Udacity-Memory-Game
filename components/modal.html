@@ -16,7 +16,7 @@
       }
       .cmesg,
       .error,
-      .success {
+      .info {
         text-align: center;
         padding: 0 !important;
       }
@@ -26,15 +26,15 @@
         width: 100%;
         font-family: "Quicksand",sans-serif;
       }
-      .errHeader,
+      .errorHeader,
       .heading,
-      .successHeader {
+      .infoHeader {
         font-size: x-large;
       }
-      .errHeader {
+      .errorHeader {
         color: red;
       }
-      .successHeader {
+      .infoHeader {
         color: #819d8c;
         font-weight: bold;
       }
@@ -79,10 +79,10 @@
           <h2 class="heading">Super Hero Mind Map</h2>
         </section>
         <section class="main">
-          <template is="dom-if" if="{{err}}">
+          <template is="dom-if" if="{{error}}">
             <paper-dialog-scrollable>
               <div class="error">
-                <h2 class="errHeader">Alert !</h2>
+                <h2 class="errorHeader">Psst</h2>
                 <h2>
                   <slot></slot>
                 </h2>
@@ -90,10 +90,10 @@
             </paper-dialog-scrollable>
             <slot></slot>
           </template>
-          <template is="dom-if" if="{{success}}">
+          <template is="dom-if" if="{{info}}">
             <paper-dialog-scrollable>
-              <div class="success">
-                <h2 class="successHeader">Success !!</h2>
+              <div class="info">
+                <h2 class="infoHeader">Hey there!</h2>
                 <h2>
                   <slot></slot>
                 </h2>
@@ -138,7 +138,7 @@
       }
       static get properties() {
         return {
-          err: {
+          error: {
             type: Boolean
           },
           info: {

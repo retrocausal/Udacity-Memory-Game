@@ -268,8 +268,8 @@ SuperHeroMindMap.prototype.deActivate = function () {
   //Should not enable user to reactivate deck,
   //Should keep throwing alerts to user initiated restart
   oContainer.click((eContainer) => {
-    const notifications = [false, false, true, "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below"];
-    return this.notify(...notifications);
+    this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
+    return this.notify("error");
   });
 };
 SuperHeroMindMap.prototype.activate = function () {
@@ -373,8 +373,11 @@ SuperHeroMindMap.prototype.reset = function () {
   this.matches = 0;
   this.ratingDip = 0;
   this.moveOnLastMatch = 0;
+  //reset score
+  this.userScore = 0;
   //remove stale modal dialogs
   this.oModalContainer.empty();
+  this.notificationMsg = "";
   //remove click handler set on rate dipping to 0
   this.oContainer.off("click");
 };
@@ -449,6 +452,8 @@ SuperHeroMindMap.prototype.rate = function () {
   //Determine if this is an even move
   const onEvenMove = (this.moves % 2 == 0 && true);
   //Reset matches till now
+  //Set it to the current number of matches, So, in the event of a next match, the delta is always 1
+  //else always 0
   this.matches = matches;
   const rating = $(".rating");
   //Only Dip the rating, on an even move
@@ -468,8 +473,8 @@ SuperHeroMindMap.prototype.rate = function () {
         direction: "right"
       }, "fast", () => {
         this.deActivate();
-        const notifications = [true, false, false, "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below"];
-        return this.notify(...notifications);
+        this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
+        return this.notify("error");
       });
     };
     //Let the deck shake for a while for visual effects
@@ -489,36 +494,37 @@ SuperHeroMindMap.prototype.score = function () {
   let delta = 0;
   let pointsThisMatch = 0;
   let scoreThisMatch = 0;
-  const dip = 5 - this.ratingDip;
+  const currentRating = 5 - this.ratingDip;
   if (this.scoreMenu.deltaHigh) {
     delta = this.scoreMenu.deltaMoves - this.scoreMenu.maxMovesDelta;
     pointsThisMatch = maxPointsPerMatch - delta;
-    scoreThisMatch = dip * (pointsThisMatch / this.ratingDip);
+    scoreThisMatch = currentRating * (pointsThisMatch / this.ratingDip);
   } else {
     delta = this.scoreMenu.maxMovesDelta - this.scoreMenu.deltaMoves;
     pointsThisMatch = maxPointsPerMatch;
-    scoreThisMatch = (dip * pointsThisMatch) + delta;
+    scoreThisMatch = (currentRating * pointsThisMatch) + delta;
   }
   scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
   console.log(scoreThisMatch);
 };
-SuperHeroMindMap.prototype.notify = function (...notifications) {
+SuperHeroMindMap.prototype.notify = function (category) {
   //Empty any stale Notification modals
   this.oModalContainer.empty();
-  const [err, success, CongratulatoryMessage, message] = notifications;
   //Create a new modal
-  const notifyCard = document.createElement("notify-card");
+  const oNotifyCard = document.createElement("notify-card");
   //Categorize the message as an:
   ///////////////////////////////////////ERROR
   //////////////////////////////////SUCCESS OR
   ////////////////////////////////////////OTHER
-  const errAttributed = (err && true) ? notifyCard.setAttribute("err", err) : err;
-  const successAttributed = (success && true) ? notifyCard.setAttribute("success", success) : success;
-  const cmesgAttributed = (CongratulatoryMessage && true) ? notifyCard.setAttribute("cmesg", CongratulatoryMessage) : CongratulatoryMessage;
+  const categoryAttributed = oNotifyCard.setAttribute(category, true);
   //Add the new notification message
-  notifyCard.innerHTML = message;
+  const oTextContainer = document.createElement("DIV");
+  oTextContainer.setAttribute("id", "notification-box");
+  const innerHTML = `<span class="notification-text">${this.notificationMsg}</span>`;
+  oTextContainer.innerHTML = innerHTML;
+  oNotifyCard.appendChild(oTextContainer);
   //Pop Up Notify
-  this.oModalContainer.append(notifyCard);
+  this.oModalContainer.append(oNotifyCard);
 };
 SuperHeroMindMap.prototype.finish = function () {
   return true;
