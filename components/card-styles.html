@@ -30,6 +30,7 @@
         width: 100%;
       }
       .responsive-cover-image-portrait {
+        width: calc(100vw/3);
         max-width: 100%;
         min-height: calc((9/16)*(100vw / 3));
         max-height: calc((9/16)*(100vw / 3));
@@ -51,6 +52,7 @@
         justify-content: flex-end;
         text-align: center;
         width: 100%;
+        padding-top: 0.5rem;
       }
       .caption {
         max-width: 100%;
@@ -67,6 +69,7 @@
       }
       @media screen and (min-width:765px) {
         .responsive-cover-image-portrait {
+          width: calc(83vw/4);
           min-height: calc((9/16)*(83vw / 4));
           height: calc((9/16)*(83vw / 4));
           max-height: calc((9/16)*(83vw / 4));
@@ -79,6 +82,7 @@
 
       @media screen and (min-width:1020px) {
         .responsive-cover-image-portrait {
+          width: calc(75vw/6);
           min-height: calc((9/16)*(75vw / 6));
           height: calc((9/16)*(75vw / 6));
           max-height: calc((9/16)*(75vw / 6));

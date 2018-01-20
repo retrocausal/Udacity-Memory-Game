@@ -116,7 +116,7 @@ const Slot = function () {
 Slot.prototype.push = function (content, hash) {
   const order = this.slots.length || 0;
   const flippedContent = new flipCard({
-    name: "DC Universe",
+    name: "DC Multiverse",
     cover: {
       src: this.assetSrc + "dcuniverse",
       format: "jpg"
@@ -345,7 +345,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
       .effect("transfer", {
         to: $('.points')
       }, 200, () => {
-        return oScoreContainer.toggle("explode", {}, 100, () => {
+        return oScoreContainer.effect("explode", {}, 1000, () => {
           return oScoreContainer.remove();
         });
       });

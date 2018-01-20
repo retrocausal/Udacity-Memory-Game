@@ -2,56 +2,48 @@ const g = require('gulp');
 const $ = require('gulp-load-plugins')();
 let i_destination = './bundle/responsive-assets/';
 
-const i_optimize = function ()
-{
+const i_optimize = function () {
   return g.src(['./assets/**/*.{png,jpg,jpeg,giff,webp}'])
     .pipe($.plumber())
     .pipe($.assetCache.filter('./assets/asset-cache'))
-    .pipe($.responsive(
-    {
+    .pipe($.responsive({
       '**/*': [
         {
           width: 480,
           format: "jpeg",
-          rename:
-          {
+          rename: {
             suffix: '-small'
           }
       },
         {
           width: 640,
           format: "jpeg",
-          rename:
-          {
+          rename: {
             suffix: '-medium'
           }
       },
         {
           width: 960,
           format: "jpeg",
-          rename:
-          {
+          rename: {
             suffix: '-large'
           }
       },
         {
           width: 1280,
           format: "jpeg",
-          rename:
-          {
+          rename: {
             suffix: '-x-large'
           }
       },
         {
           width: 1600,
           format: "jpeg",
-          rename:
-          {
+          rename: {
             suffix: '-xx-large'
           }
       }]
-    },
-    {
+    }, {
       withMetadata: false,
       errorOnEnlargement: false,
       progressive: true,
@@ -64,16 +56,13 @@ const i_optimize = function ()
       force: false
     }))
     .pipe($.imagemin([
-      $.imagemin.jpegtran(
-      {
+      $.imagemin.jpegtran({
         progressive: true
       }),
-      $.imagemin.optipng(
-      {
+      $.imagemin.optipng({
         optimizationLevel: 9
       })
-    ],
-    {
+    ], {
       verbose: true
     }))
     .pipe($.plumber.stop())
@@ -81,12 +70,10 @@ const i_optimize = function ()
     .pipe($.assetCache.cache());
 };
 
-const css_optimize = function ()
-{
+const css_optimize = function () {
   return g.src('./styles/**/*.css')
     .pipe($.concatCss('app.css'))
-    .pipe($.autoprefixer(
-    {
+    .pipe($.autoprefixer({
       browsers: ['last 2 versions']
     }))
     .pipe(g.dest('./bundle/style/'))
@@ -95,11 +82,9 @@ const css_optimize = function ()
     .pipe(g.dest('./bundle/style/minified/'));
 };
 
-g.task('default', function ()
-{
+g.task('default', function () {
   return i_optimize();
 });
-g.task('csso', function ()
-{
+g.task('csso', function () {
   return css_optimize();
 });
