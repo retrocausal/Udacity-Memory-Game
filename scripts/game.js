@@ -206,7 +206,7 @@ SuperHeroMindMap.prototype.build = function () {
     this.slot.push(card, hash);
     this.slot.push(match, hash);
     //Track all superheroes created, may be of use
-    this.superHeroes[name] = superhero;
+    this.superHeroes[hash] = superhero;
   }
   //shuffle the deck for display later via layout
   //copy over the slots generated via the Slot class, to a local "slots" property
@@ -350,6 +350,13 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         });
       });
   };
+  const isMaxScore = s => {
+    if (this.maxScoreOnMatch == false) {
+      this.maxScoreOnMatch = s;
+    }
+    this.maxScoreOnMatch = (this.maxScoreOnMatch >= s) ? this.maxScoreOnMatch : s;
+    return (s >= this.maxScoreOnMatch);
+  };
   //if card already matched, or, if the same card clicked, set exit condition to do nothing
   const exitCondition = (this.slotsMatched.indexOf(id) >= 0 || id == this.currentMatchableId);
   //if the card is not matched with a pair, or, if a different card clicked, continue to inspect a possible match
@@ -375,6 +382,11 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         this.moveOnLastMatch = this.moves;
         //Grade or aggregate points per match
         const score = this.score();
+        const isMax = isMaxScore(score);
+        if (isMax) {
+          const matchingId = this.currentMatchableId;
+          this.setHighScoringMatch(id, matchingId, score);
+        }
         setTimeout(() => {
           puffScore(score);
           return this.showScores();
@@ -407,6 +419,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.moveOnLastMatch = 0;
   //reset score
   this.userScore = 0;
+  this.maxScoreOnMatch = false;
   this.oScoreContainer.empty();
   //remove stale modal dialogs
   this.oModalContainer.empty();
@@ -541,6 +554,19 @@ SuperHeroMindMap.prototype.score = function () {
   scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
   this.userScore += scoreThisMatch;
   return scoreThisMatch;
+};
+SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
+  const [id, match, score] = highs;
+  const slot = this.slots[id];
+  const matchedSlot = this.slot[match];
+  const hash = slot.hash;
+  const oSuperhero = this.superHeroes[hash];
+  const name = oSuperhero.name;
+  const alterEgo = oSuperhero.alterEgo;
+  const highScoreText = `${name} / ${alterEgo} ( + ${score} )`;
+  const highScoreContainer = $('.highest-scoring-match');
+  return highScoreContainer.empty()
+    .append(highScoreText);
 };
 SuperHeroMindMap.prototype.notify = function (category) {
   //Empty any stale Notification modals

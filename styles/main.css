@@ -80,7 +80,6 @@ main {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
-  width: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -338,9 +337,12 @@ superhero-card {
   .highest-scoring-match,
   .matches,
   .mismatches,
+  .scorecard-game-score,
   .scorecard-moves,
+  .scorecard-number-of-moves,
   .scorecard-rating,
-  .scorecard-total-score {
+  .scorecard-total-score,
+  .scorecard-user-rating {
     width: 50%;
     max-width: 50%;
     min-width: 50%;
