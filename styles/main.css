@@ -57,7 +57,8 @@ main {
   content: "\00A0";
 }
 
-.deck-space {
+.deck-space,
+.statistics {
   width: 100%;
   margin: auto;
 }
@@ -65,6 +66,60 @@ main {
 .deck,
 .instructions {
   width: 100%;
+}
+
+.game-stats {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.highs,
+.scorecard {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.highest-score,
+.highest-scoring-match,
+.matches,
+.mismatches,
+.scorecard-game-score,
+.scorecard-moves,
+.scorecard-number-of-moves,
+.scorecard-rating,
+.scorecard-total-score,
+.scorecard-user-rating {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.cards-found,
+.cards-not-found,
+.highest-score,
+.scorecard-moves,
+.scorecard-rating,
+.scorecard-total-score {
+  text-decoration: underline;
+}
+
+.cards-found,
+.cards-not-found,
+.highest-score,
+.scorecard-moves,
+.scorecard-rating,
+.scorecard-total-score {
+  font-family: "Quicksand",sans-serif;
 }
 
 .deck {
@@ -240,16 +295,18 @@ superhero-card {
 .sh-image-link-header,
 .sh-name-header {
   height: auto;
-  font-size: x-large;
+  font-size: larger;
   font-family: "Cinzel Decorative",serif;
 }
 
 .credit-image {
-  max-width: 150px;
+  max-width: 100%;
+  width: 150px;
 }
 @media screen and (min-width:765px) {
   .deck-space,
-  .meta {
+  .meta,
+  .statistics {
     width: 83vw;
   }
 
@@ -276,10 +333,24 @@ superhero-card {
   .reload {
     margin-top: 0.51rem;
   }
+
+  .highest-score,
+  .highest-scoring-match,
+  .matches,
+  .mismatches,
+  .scorecard-moves,
+  .scorecard-rating,
+  .scorecard-total-score {
+    width: 50%;
+    max-width: 50%;
+    min-width: 50%;
+    text-decoration: none;
+  }
 }
 @media screen and (min-width:1020px) {
   .deck-space,
-  .meta {
+  .meta,
+  .statistics {
     width: 75vw;
   }
 

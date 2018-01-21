@@ -379,6 +379,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
           puffScore(score);
           return this.showScores();
         }, 10);
+        this.checkFinishCriteria();
       } else {
         //flips take about 10 ms each,
         // two cards flipped equals 20ms
@@ -560,8 +561,18 @@ SuperHeroMindMap.prototype.notify = function (category) {
   //Pop Up Notify
   this.oModalContainer.append(oNotifyCard);
 };
+SuperHeroMindMap.prototype.checkFinishCriteria = function () {
+  const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
+  const matchesComplete = (cardsAvailable === 0) && true;
+  this.matchesComplete = matchesComplete;
+  return this.finish();
+};
 SuperHeroMindMap.prototype.finish = function () {
-  return true;
+  if (this.matchesComplete) {
+    this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
+    You can now view some statistics, or, just hit replay`;
+  }
+  return false;
 };
 SuperHeroMindMap.prototype.showMoves = function () {
   const moveCounter = $(".move");
