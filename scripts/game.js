@@ -264,15 +264,8 @@ SuperHeroMindMap.prototype.deActivate = function () {
   const cards = oContainer.find("article.card");
   //Deactivate click handlers, even on children, safe side
   cards.off("click");
-  cards.children()
+  return cards.children()
     .off("click");
-  //Activate a click handler , in case the user is stubborn, globally on deck
-  //Should not enable user to reactivate deck,
-  //Should keep throwing alerts to user initiated restart
-  oContainer.click((eContainer) => {
-    this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
-    return this.notify("error");
-  });
 };
 SuperHeroMindMap.prototype.activate = function () {
   //Copy locally, the local container property
@@ -326,30 +319,42 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     this.currentMatchableId = "";
     this.currentMatchableHash = "";
   };
+  //Define a per match visual effects handler
   const puffScore = (score) => {
+    //remove any stale score containers
     $(".puff-of-score")
       .remove();
+    //identify the to be matched cards
     const prevCard = $("#" + this.currentMatchableId);
     const prevSlot = this.slots[this.currentMatchableId];
-    const oScoreContainer = $('<div class="puff-of-score"></div>');
-    $("BODY")
-      .append(oScoreContainer);
-    const scoreText = `<h1 class="current-score">+${score}</h1>`;
-    oScoreContainer.empty();
+    //puff the two matching cards
     card.children()
       .effect("puff");
     prevCard.children()
       .effect("puff");
+    //add a new score on this match container
+    const oScoreContainer = $('<div class="puff-of-score"></div>');
+    $("BODY")
+      .append(oScoreContainer);
+
+    //append the score on this match
+    const scoreText = `<h1 class="current-score">+${score}</h1>`;
+    oScoreContainer.empty();
     return oScoreContainer.html(scoreText)
+      //let it appear to have popped up
       .effect("scale")
+      //now let the user see the score transferred to the total score
       .effect("transfer", {
         to: $('.points')
       }, 200, () => {
-        return oScoreContainer.effect("explode", {}, 1000, () => {
-          return oScoreContainer.remove();
+        //scores visualised, remove the score container
+        return oScoreContainer.effect("explode", {}, 400, () => {
+          oScoreContainer.remove();
+          return this.showScores();
         });
       });
   };
+  //Checks if, the score recorded this match, is the overall highest yet
   const isMaxScore = s => {
     if (this.maxScoreOnMatch == false) {
       this.maxScoreOnMatch = s;
@@ -378,19 +383,21 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         //matched slots and cards
         this.slotsMatched.push(this.currentMatchableId);
         this.slotsMatched.push(id);
+        this.matchedSlotHashes.push(hash);
         //Set a Rating parameter to determine how many moves were made since the last match
         this.moveOnLastMatch = this.moves;
         //Grade or aggregate points per match
         const score = this.score();
+        //Is this the highest score yet?
+        //If it is, update the game statistic - high score move
         const isMax = isMaxScore(score);
         if (isMax) {
           const matchingId = this.currentMatchableId;
           this.setHighScoringMatch(id, matchingId, score);
         }
-        setTimeout(() => {
-          puffScore(score);
-          return this.showScores();
-        }, 10);
+        //call in some visual effects
+        puffScore(score);
+        //Is the game complete with all cards matched?
         this.checkFinishCriteria();
       } else {
         //flips take about 10 ms each,
@@ -412,6 +419,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.currentMatchableId = "";
   this.slotsMatched = [];
   this.matchesComplete = false;
+  this.matchedSlotHashes = [];
   //reset rate params
   this.moves = 0;
   this.matches = 0;
@@ -424,8 +432,47 @@ SuperHeroMindMap.prototype.reset = function () {
   //remove stale modal dialogs
   this.oModalContainer.empty();
   this.notificationMsg = "";
-  //remove click handler set on rate dipping to 0
-  this.oContainer.off("click");
+  this.notificationCategory = "info";
+  // //remove click handler set on rate dipping to 0
+  // this.oContainer.off("click");
+  this.resetPanel();
+  this.resetStatistics();
+};
+SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
+  $(".rating")
+    .children()
+    .remove();
+  if (!gameOver) {
+    let star;
+    const oRatingContainer = $(".rating");
+    for (let i = 0; i < 5; i++) {
+      star = $('<span class="fa fa-star star"></span>');
+      oRatingContainer.append(star);
+    }
+  }
+  $(".total-user-points")
+    .children()
+    .empty()
+    .html("--");
+  return $(".move")
+    .empty()
+    .html("<h2>--</h2>");
+};
+SuperHeroMindMap.prototype.resetStatistics = function () {
+  const highScoreText = "<h2>--</h2>";
+  const initialScore = "<h2>--</h2>";
+  const highScoreContainer = $('.highest-scoring-match');
+  const scorecardScoreContainer = $(".scorecard-game-score");
+  highScoreContainer.empty()
+    .html(highScoreText);
+  scorecardScoreContainer.empty()
+    .html(initialScore);
+  const oMatchesContainer = $(".matches");
+  const oMismatchesContainer = $(".mismatches");
+  oMatchesContainer.find("h3")
+    .remove();
+  oMismatchesContainer.find("h3")
+    .remove();
 };
 SuperHeroMindMap.prototype.shuffleDeck = function () {
   //Initialize / re Initialize a local property to track slots in play
@@ -518,9 +565,10 @@ SuperHeroMindMap.prototype.rate = function () {
         times: 5,
         direction: "right"
       }, "fast", () => {
-        this.deActivate();
+        //this.deActivate();
         this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
-        return this.notify("error");
+        this.notificationCategory = "error";
+        return this.finish();
       });
     };
     //Let the deck shake for a while for visual effects
@@ -536,39 +584,59 @@ SuperHeroMindMap.prototype.rate = function () {
   return this.scoreMenu = scoreMenu;
 };
 SuperHeroMindMap.prototype.score = function () {
+  //Arbitrary max points per match
   const maxPointsPerMatch = 25;
+  //Initialize scoring parameters
   let delta = 0;
   let pointsThisMatch = 0;
   let scoreThisMatch = 0;
+  //the rating the game is on at the moment
+  //(maxrating of 5 minus the dip in rating)
   const currentRating = 5 - this.ratingDip;
+  //the dip in rating
+  //check if it is 0, and set it to be a minimum of 1, if it is
   const dip = (this.ratingDip > 0) ? this.ratingDip : 1;
   if (this.scoreMenu.deltaHigh) {
+    //delta becomes the number of moves over and above the max permissible moves
     delta = this.scoreMenu.deltaMoves - this.scoreMenu.maxMovesDelta;
+    //points scored, are a deduction of the delta above from the max arbitray points to be awarded per match
     pointsThisMatch = maxPointsPerMatch - delta;
+    //rating needs to be a factor
+    //also, the more the dip, the less the points => divide by dip
     scoreThisMatch = currentRating * (pointsThisMatch / dip);
   } else {
+    //delta becomes the number of moves left to exceed the max permissible moves
     delta = this.scoreMenu.maxMovesDelta - this.scoreMenu.deltaMoves;
+    //No deductions here!
     pointsThisMatch = maxPointsPerMatch;
+    //factor in the rating
+    //Since the user matched this one without exceeding max permissible Moves,
+    //the delta above, is the bonus
     scoreThisMatch = (currentRating * pointsThisMatch) + delta;
   }
   scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
+  //add score on this match to the game score
   this.userScore += scoreThisMatch;
   return scoreThisMatch;
 };
 SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
   const [id, match, score] = highs;
-  const slot = this.slots[id];
   const matchedSlot = this.slot[match];
-  const hash = slot.hash;
-  const oSuperhero = this.superHeroes[hash];
+  const oSuperhero = this.getSuperhero(id);
   const name = oSuperhero.name;
   const alterEgo = oSuperhero.alterEgo;
-  const highScoreText = `${name} / ${alterEgo} ( + ${score} )`;
+  const highScoreText = `<h2>${name} / ${alterEgo} ( + ${score} )</h2>`;
   const highScoreContainer = $('.highest-scoring-match');
   return highScoreContainer.empty()
     .append(highScoreText);
 };
-SuperHeroMindMap.prototype.notify = function (category) {
+SuperHeroMindMap.prototype.getSuperhero = function (id) {
+  const slot = this.slots[id];
+  const hash = slot.hash;
+  const oSuperhero = this.superHeroes[hash];
+  return oSuperhero;
+};
+SuperHeroMindMap.prototype.notify = function () {
   //Empty any stale Notification modals
   this.oModalContainer.empty();
   //Create a new modal
@@ -577,7 +645,7 @@ SuperHeroMindMap.prototype.notify = function (category) {
   ///////////////////////////////////////ERROR
   //////////////////////////////////SUCCESS OR
   ////////////////////////////////////////OTHER
-  const categoryAttributed = oNotifyCard.setAttribute(category, true);
+  const categoryAttributed = oNotifyCard.setAttribute(this.notificationCategory, true);
   //Add the new notification message
   const oTextContainer = document.createElement("DIV");
   oTextContainer.setAttribute("id", "notification-box");
@@ -591,30 +659,87 @@ SuperHeroMindMap.prototype.checkFinishCriteria = function () {
   const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
   const matchesComplete = (cardsAvailable === 0) && true;
   this.matchesComplete = matchesComplete;
-  return this.finish();
-};
-SuperHeroMindMap.prototype.finish = function () {
   if (this.matchesComplete) {
     this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
     You can now view some statistics, or, just hit replay`;
+    this.notificationCategory = "cmesg";
   }
-  return false;
+  return (this.matchesComplete) ? this.finish() : false;
+};
+SuperHeroMindMap.prototype.finish = function () {
+  setTimeout(() => {
+    this.resetPanel(true);
+    this.oContainer.css({
+        "min-height": 0,
+        "height": "auto",
+        "min-width": 0,
+        "width": "auto"
+      })
+      .empty();
+    this.notify();
+    return this.showStatistics();
+  }, 1500);
+  return this.emptyDeckThenDelay();
 };
 SuperHeroMindMap.prototype.showMoves = function () {
   const moveCounter = $(".move");
+  const scorecardMoveStat = $(".scorecard-number-of-moves");
+  scorecardMoveStat.empty()
+    .append(`<h2>${this.moves}</h2>`);
   return moveCounter.empty()
     .append(`<span class="move-count">${this.moves}</span>`);
 
 };
 SuperHeroMindMap.prototype.showScores = function () {
   const scoreText = `${this.userScore}`;
-  setTimeout(() => {
-    return this.oScoreContainer.empty()
-      .append(scoreText)
-      .effect("bounce");
-  }, 500);
+  const scorecardScoreStat = $(".scorecard-game-score");
+  scorecardScoreStat.empty()
+    .append(`<h2>${scoreText}</h2>`);
+  return this.oScoreContainer.empty()
+    .append(scoreText)
+    .effect("bounce");
 };
-SuperHeroMindMap.prototype.restart = function () {
+SuperHeroMindMap.prototype.showStatistics = function () {
+  let star;
+  let oContainer;
+  const scorecardRatingStat = $(".scorecard-user-rating-stars");
+  scorecardRatingStat.empty();
+  let rating = 5 - this.ratingDip;
+  if (rating < 1)
+    rating = 1;
+  for (let i = 0; i < rating; i++) {
+    star = $('<span class="fa fa-star star"></span>');
+    scorecardRatingStat.append(star);
+  }
+  const oMatchesContainer = $(".matches");
+  const oMismatchesContainer = $(".mismatches");
+  const superheroKeys = Object.keys(this.superHeroes);
+  const matchedSuperheroes = superheroKeys.reduce((accumalatedMatchedSuperheroes, currentKey) => {
+    if (this.matchedSlotHashes.indexOf(currentKey) >= 0) {
+      accumalatedMatchedSuperheroes.push(this.superHeroes[currentKey]);
+    }
+    return accumalatedMatchedSuperheroes;
+  }, []);
+  const unmatchedSuperheroes = superheroKeys.reduce((accumalatedUnMatchedSuperheroes, currentKey) => {
+    if (this.matchedSlotHashes.indexOf(currentKey) < 0) {
+      accumalatedUnMatchedSuperheroes.push(this.superHeroes[currentKey]);
+    }
+    return accumalatedUnMatchedSuperheroes;
+  }, []);
+  for (const superhero of matchedSuperheroes) {
+    oContainer = $('<h3 class="cards-found"></h3>');
+    oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
+    oMatchesContainer.append(oContainer);
+  }
+  for (const superhero of unmatchedSuperheroes) {
+    oContainer = $('<h3 class="cards-not-found"></h3>');
+    oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
+    oMismatchesContainer.append(oContainer);
+  }
+  const oStatisticsContainer = $(".statistics");
+  oStatisticsContainer.fadeIn(1500);
+};
+SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
   //Create a visually engaging spinning wheel
   const shuffle = $('<div class="shuffle"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   //Empty the Deck
@@ -628,18 +753,9 @@ SuperHeroMindMap.prototype.restart = function () {
       "min-height": this.oCanvas.height
     })
     .append(shuffle);
-  //Determine how many dips in rating the user took - in case of a mid game restart by the user
-  //Add those many stars back
-  //reset dips in rating to 0
-  if (0 < this.ratingDip) {
-    const rating = $(".rating");
-    let star;
-    while (0 < this.ratingDip) {
-      star = $('<span class="fa fa-star star"></span>');
-      rating.append(star);
-      this.ratingDip--;
-    }
-  }
+};
+SuperHeroMindMap.prototype.restart = function () {
+  this.emptyDeckThenDelay();
   //Relayout the game
   const relayoutDeck = () => {
     //reset the container for the deck

@@ -63,6 +63,10 @@ main {
   margin: auto;
 }
 
+.statistics {
+  display: none;
+}
+
 .deck,
 .instructions {
   width: 100%;
@@ -101,24 +105,24 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  line-height: 2;
+}
+
+.scorecard-user-rating-stars {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
 .cards-found,
 .cards-not-found,
-.highest-score,
-.scorecard-moves,
-.scorecard-rating,
-.scorecard-total-score {
-  text-decoration: underline;
-}
-
-.cards-found,
-.cards-not-found,
-.highest-score,
-.scorecard-moves,
-.scorecard-rating,
-.scorecard-total-score {
+.highest-score-header,
+.scorecard-moves-header,
+.scorecard-rating-header,
+.scorecard-total-score-header {
   font-family: "Quicksand",sans-serif;
+  text-decoration: underline;
+  line-height: 2;
 }
 
 .deck {
@@ -346,7 +350,18 @@ superhero-card {
     width: 50%;
     max-width: 50%;
     min-width: 50%;
+  }
+
+  .highest-score-header,
+  .scorecard-moves-header,
+  .scorecard-rating-header,
+  .scorecard-total-score-header {
     text-decoration: none;
+  }
+
+  .matches,
+  .mismatches {
+    justify-content: flex-start;
   }
 }
 @media screen and (min-width:1020px) {
