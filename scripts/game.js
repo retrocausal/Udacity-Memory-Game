@@ -234,16 +234,24 @@ SuperHeroMindMap.prototype.addCards = function () {
   for (const slot of this.slot.slots) {
     //create a card to display content, flipped or front
     const card = $("<article class='card'></article>");
+    const unnecessaryContainerForSHODDYjQueryUI = $('<div class="placeholder"></div>')
+      .css({
+        display: "block !important",
+        width: "100%"
+      });
     //Assign an ID, to the card
     //Empty to begin
     //Assign the css display order and display the card as a block with the flip side in view
     card.attr("id", slot.id)
       .empty()
-      .append(slot.flippedContent)
-      .css({
-        order: slot.order,
-        display: "block"
-      });
+      .append(unnecessaryContainerForSHODDYjQueryUI);
+
+    card.find(".placeholder")
+      .append(slot.flippedContent);
+    card.css({
+      order: slot.order,
+      display: "block"
+    });
     //Append the card onto the slot on deck
     this.oContainer.append(card);
   }
@@ -274,10 +282,14 @@ SuperHeroMindMap.prototype.activate = function () {
   const cards = oContainer.find("article.card");
   //copy over the locally available / defined click handler,
   //reset
-  //Assign a click handler by binding the copied click handler to the current object
-  const clickedCallBack = this.clickedCallBack;
+  //define a click handler
+  const clickedCallBack = (e) => {
+    return setTimeout(() => {
+      return this.clickedCallBack(e);
+    }, 30);
+  };
   this.reset();
-  return cards.click(clickedCallBack.bind(this));
+  return cards.click(clickedCallBack);
 };
 SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
   //copy all essential decision makers from the card clicked
@@ -298,13 +310,13 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     const prevSlot = this.slots[this.currentMatchableId];
     //Shake them
     //Flip them
-    prevCard.children()
+    prevCard.find(".placeholder")
       .effect("shake", {
         times: 5,
         distance: 5,
         direction: "left"
       }, "fast");
-    card.children()
+    card.find(".placeholder")
       .effect("shake", {
         times: 5,
         distance: 5,
@@ -328,15 +340,16 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     const prevCard = $("#" + this.currentMatchableId);
     const prevSlot = this.slots[this.currentMatchableId];
     //puff the two matching cards
-    card.children()
-      .effect("puff");
-    prevCard.children()
-      .effect("puff");
+    card.find(".placeholder")
+      .effect("puff")
+      .fadeIn(5);
+    prevCard.find(".placeholder")
+      .effect("puff")
+      .fadeIn(5);
     //add a new score on this match container
     const oScoreContainer = $('<div class="puff-of-score"></div>');
     $("BODY")
       .append(oScoreContainer);
-
     //append the score on this match
     const scoreText = `<h1 class="current-score">+${score}</h1>`;
     oScoreContainer.empty();
@@ -473,6 +486,8 @@ SuperHeroMindMap.prototype.resetStatistics = function () {
     .remove();
   oMismatchesContainer.find("h3")
     .remove();
+  const oStatisticsContainer = $(".statistics");
+  return oStatisticsContainer.hide();
 };
 SuperHeroMindMap.prototype.shuffleDeck = function () {
   //Initialize / re Initialize a local property to track slots in play
@@ -491,28 +506,26 @@ SuperHeroMindMap.prototype.flip = function (card, slot) {
   //grab the currently displayed content on the card in the slot on deck
   //toggle the view to the alternative content
   const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
-  const content = slot[toggledContent];
+  let content = slot[toggledContent];
   //Reveals a Card on Slot
   const reveal = function () {
-    return card.children()
-      .each(function () {
-        $(this)
-          .fadeIn(5)
-      });
+    return card.find(".placeholder")
+      .fadeIn(5);
   };
   //Flips a card
   //Just appends the toggled content above, to the card on slot
   const flip = function () {
-    return card.empty()
+    card.find(".placeholder")
+      .children()
+      .remove();
+    return card.find(".placeholder")
+      .empty()
       .append(content);
   };
   //hides a card
   const hide = function () {
-    return card.children()
-      .each(function () {
-        $(this)
-          .fadeOut(5)
-      });
+    return card.find(".placeholder")
+      .fadeOut(5);
   };
   //Order : Hide , Then Flip, and finally, Reveal
   hide();
@@ -743,16 +756,18 @@ SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
   //Create a visually engaging spinning wheel
   const shuffle = $('<div class="shuffle"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   //Empty the Deck
-  this.oContainer.children()
-    .each(function () {
-      return this.remove();
-    });
-  //Set the Deck's dimensions to be retained to what they were before emptying it's content
-  //Display that spinning wheel indicating, the cards are being shuffled, and a new game is being initialized
-  this.oContainer.css({
-      "min-height": this.oCanvas.height
-    })
-    .append(shuffle);
+  setTimeout(() => {
+    this.oContainer.children()
+      .each(function () {
+        return this.remove();
+      });
+    //Set the Deck's dimensions to be retained to what they were before emptying it's content
+    //Display that spinning wheel indicating, the cards are being shuffled, and a new game is being initialized
+    return this.oContainer.css({
+        "min-height": this.oCanvas.height
+      })
+      .append(shuffle);
+  }, 600);
 };
 SuperHeroMindMap.prototype.restart = function () {
   this.emptyDeckThenDelay();

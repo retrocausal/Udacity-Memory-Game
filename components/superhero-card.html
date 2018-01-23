@@ -34,13 +34,9 @@
   </template>
   <script>
     class superheroCard extends Polymer.Element {
-      constructor(...oSuperHero) {
+      constructor(oSuperHero) {
         super();
-        const [superhero] = oSuperHero;
-        if (superhero) {
-          this.superhero = superhero;
-        }
-        //console.log(this.flipped, this.superhero);
+        this.superhero = oSuperHero;
       }
       static get is() {
         return "superhero-card";
@@ -48,33 +44,13 @@
       static get properties() {
         return {
           superhero: {
-            type: Object,
-            value: {
-              alterEgo: "Kal El",
-              city: "Metropolis",
-              cover: {
-                src: "superman",
-                format: "jpg"
-              },
-              rearCover: {
-                src: "dcuniverse",
-                format: "jpg"
-              },
-              powers: [],
-              superPowers: [],
-              name: "Superman",
-              origin: "Krypton"
-            }
+            type: Object
           },
           flipped: {
             type: Boolean,
             value: false
           }
         };
-      }
-      ready() {
-        super.ready();
-        //console.log(this.superhero);
       }
     }
     window.customElements.define(superheroCard.is, superheroCard);
