@@ -1,3 +1,13 @@
+/*
+ ** ALL SUPER HEROES ARE VIGILANTES!
+ ** NOT VICE VERSA
+ */
+
+/*
+ **@name Vigilante
+ **@description Provides a blueprint for making a superhero
+ ** Reserved for possible later full scale game
+ */
 const Vigilante = function () {
   this.assetSrc = "./bundle/responsive-assets/jpegs/";
   this.rearCover = {
@@ -16,6 +26,8 @@ Vigilante.prototype.kill = function (criminal) {
   return true;
 };
 //Define All Super Powers
+//Possible later use case for a full scale game
+//mostly for UI effects once a library can provide these effects
 Vigilante.sonic_scream = function sonic_scream() {};
 Vigilante.hand_to_hand_combat = function hand_to_hand_combat() {};
 Vigilante.martial_arts = function martial_arts() {};
@@ -103,7 +115,6 @@ Superhero.prototype.createTradeCards = function () {
   this.match = new matchCard(superhero);
 };
 
-
 /*
  **@name Slot
  **@description Creates a new slot instance to hold a card
@@ -167,7 +178,7 @@ Slot.prototype.shuffleSlots = function () {
 
 /*
  ** @name SuperHeroMindMap
- ** @Description Constructor Definition for generating new games on the fly.
+ ** @Description generate the game! Build its behaviours
  ** @params
  ********** config : Replacement for the default argument list. The first param is assumed to be the configuration
  parameter. This is ideally an array of hero objects
@@ -181,10 +192,6 @@ const SuperHeroMindMap = function (...config) {
   this.slots = {};
 };
 //define the Game prototype
-/*
- **@ method build
- **@ description builds superheroes on the fly, assigns them to available slots on the game grid
- */
 SuperHeroMindMap.prototype.build = function () {
   //For All Heroes, in the Game, build a superhero object on the fly
   for (const hero of this.heroes) {
@@ -234,8 +241,19 @@ SuperHeroMindMap.prototype.addCards = function () {
   for (const slot of this.slot.slots) {
     //create a card to display content, flipped or front
     const card = $("<article class='card'></article>");
+    //TOTALLY AVOIDABLE CONTAINER
+    //CAN REMOVE ONCE JQUERY MATURES ITS UI
+    //JQ creates / or rather, CLONES (WHY?????) an entire node as a placeholder for UI effects
+    //In case of webcomponents, like what we have, THIS SCREWS UP THE ENTIRE flow
+    //if proper defaults arent set on the component
+    //The below container DIV node, encapsulates the webcomponents used
+    //Hence, avoiding an improperly initiated webcomponent / even STALE ONES
+    //JQ now clones this div
     const unnecessaryContainerForSHODDYjQueryUI = $('<div class="placeholder"></div>')
       .css({
+        //JQ AT IT AGAIN!
+        //JUVENILE AT BEST TO RANDOMLY CHANGE THE DISPLAY CSS ATTRIBUTE
+        //AND IGNORANT TO NOT CHANGE IT BACK JQ ON REAPPEND / SHOW!
         display: "block !important",
         width: "100%"
       });
@@ -452,9 +470,13 @@ SuperHeroMindMap.prototype.reset = function () {
   this.resetStatistics();
 };
 SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
+  //All text displaying containers on the game panel, need reset
+  // ON - replay / a win
   $(".rating")
     .children()
     .remove();
+  //Hold off on adding 5 stars to the rating container just yet
+  //Add them, only on user initiated replay, before the game is won
   if (!gameOver) {
     let star;
     const oRatingContainer = $(".rating");
@@ -472,6 +494,8 @@ SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
     .html("<h2>--</h2>");
 };
 SuperHeroMindMap.prototype.resetStatistics = function () {
+  //fairy straightforward
+  //All text appended on to the stats panel during the game, need reset to null / "--"
   const highScoreText = "<h2>--</h2>";
   const initialScore = "<h2>--</h2>";
   const highScoreContainer = $('.highest-scoring-match');
@@ -486,6 +510,8 @@ SuperHeroMindMap.prototype.resetStatistics = function () {
     .remove();
   oMismatchesContainer.find("h3")
     .remove();
+  //Important! Hide the stats panel on
+  // - replay
   const oStatisticsContainer = $(".statistics");
   return oStatisticsContainer.hide();
 };
@@ -633,11 +659,16 @@ SuperHeroMindMap.prototype.score = function () {
   return scoreThisMatch;
 };
 SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
+  //gather the high scoring slot, and its matching slots
+  //For a later possible feature of displaying cards on the stats panel
   const [id, match, score] = highs;
   const matchedSlot = this.slot[match];
+  //for now, identify the superhero card that was matched
+  //get the name and matched alter ego
   const oSuperhero = this.getSuperhero(id);
   const name = oSuperhero.name;
   const alterEgo = oSuperhero.alterEgo;
+  //Append the name / alterego concatenation to the stats panel's high scoring match container
   const highScoreText = `<h2>${name} / ${alterEgo} ( + ${score} )</h2>`;
   const highScoreContainer = $('.highest-scoring-match');
   return highScoreContainer.empty()
@@ -669,19 +700,29 @@ SuperHeroMindMap.prototype.notify = function () {
   this.oModalContainer.append(oNotifyCard);
 };
 SuperHeroMindMap.prototype.checkFinishCriteria = function () {
+  //number of cards still unmatched
   const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
+  //Is the game over? are all superheroes matched to their respective alter egoes?
   const matchesComplete = (cardsAvailable === 0) && true;
   this.matchesComplete = matchesComplete;
+  //If all matches are done, set a congratulatory message
+  //set the notification criteria
   if (this.matchesComplete) {
     this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
     You can now view some statistics, or, just hit replay`;
     this.notificationCategory = "cmesg";
   }
+  //empty the deck and show some cool stats
   return (this.matchesComplete) ? this.finish() : false;
 };
 SuperHeroMindMap.prototype.finish = function () {
+  //Delay for visual effects
   setTimeout(() => {
+    //Reset the game panel displaying scores and moves
+    //Do not add stars until the game is over - results in more than 5 star ratings
     this.resetPanel(true);
+    //reset the min dimensions of the deck container, to 0, as we are hiding it for stats to take its place
+    //then, empty the deck, make space for statistics
     this.oContainer.css({
         "min-height": 0,
         "height": "auto",
@@ -689,12 +730,17 @@ SuperHeroMindMap.prototype.finish = function () {
         "width": "auto"
       })
       .empty();
+    //notify the user, that he has either failed, or won
     this.notify();
+    //then , finally, load the stats
     return this.showStatistics();
   }, 1500);
+  //while the finish is delayed, show the spinner for visual effects
   return this.emptyDeckThenDelay();
 };
 SuperHeroMindMap.prototype.showMoves = function () {
+  //Display the number of moves on both the game panel while in play
+  //And, the stats panel for display post finish either by exhaustion of moves, or a win
   const moveCounter = $(".move");
   const scorecardMoveStat = $(".scorecard-number-of-moves");
   scorecardMoveStat.empty()
@@ -704,6 +750,8 @@ SuperHeroMindMap.prototype.showMoves = function () {
 
 };
 SuperHeroMindMap.prototype.showScores = function () {
+  //Display score on both the game panel while the game is on
+  //And, the hidden stats panel for display after the game ended
   const scoreText = `${this.userScore}`;
   const scorecardScoreStat = $(".scorecard-game-score");
   scorecardScoreStat.empty()
@@ -715,6 +763,7 @@ SuperHeroMindMap.prototype.showScores = function () {
 SuperHeroMindMap.prototype.showStatistics = function () {
   let star;
   let oContainer;
+  //Show the overall rating on which the game ended
   const scorecardRatingStat = $(".scorecard-user-rating-stars");
   scorecardRatingStat.empty();
   let rating = 5 - this.ratingDip;
@@ -724,6 +773,8 @@ SuperHeroMindMap.prototype.showStatistics = function () {
     star = $('<span class="fa fa-star star"></span>');
     scorecardRatingStat.append(star);
   }
+  //Create lists of all matched superHeroes
+  //Also, a list of all unmatched superHeroes
   const oMatchesContainer = $(".matches");
   const oMismatchesContainer = $(".mismatches");
   const superheroKeys = Object.keys(this.superHeroes);
@@ -739,16 +790,19 @@ SuperHeroMindMap.prototype.showStatistics = function () {
     }
     return accumalatedUnMatchedSuperheroes;
   }, []);
+  //Append the list of all matched superheroes to the mathes container on the stats panel
   for (const superhero of matchedSuperheroes) {
     oContainer = $('<h3 class="cards-found"></h3>');
     oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
     oMatchesContainer.append(oContainer);
   }
+  //Also, append the list of all unamtched superheroes to the mismatched container on the statistics panel
   for (const superhero of unmatchedSuperheroes) {
     oContainer = $('<h3 class="cards-not-found"></h3>');
     oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
     oMismatchesContainer.append(oContainer);
   }
+  //Important! Show the stats after the player finishes
   const oStatisticsContainer = $(".statistics");
   oStatisticsContainer.fadeIn(1500);
 };
@@ -756,6 +810,9 @@ SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
   //Create a visually engaging spinning wheel
   const shuffle = $('<div class="shuffle"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   //Empty the Deck
+  //Append spinner
+  //Add a timeout delay, because, after the last winning match, the spinner and the shuffle
+  //hijack the score puff effect
   setTimeout(() => {
     this.oContainer.children()
       .each(function () {
