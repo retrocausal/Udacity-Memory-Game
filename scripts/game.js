@@ -233,6 +233,8 @@ SuperHeroMindMap.prototype.layout = function () {
   this.oModalContainer = $(".notify-modals");
   //Initialize the scores container
   this.oScoreContainer = $(".total-user-score");
+  //empty the Deck
+  this.oContainer.empty();
   //Iteratively Add Slots with self contained cards to the flex deck
   return this.addCards();
 };
@@ -460,8 +462,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.userScore = 0;
   this.maxScoreOnMatch = false;
   this.oScoreContainer.empty();
-  //remove stale modal dialogs
-  this.oModalContainer.empty();
+  //remove stale modal notifications
   this.notificationMsg = "";
   this.notificationCategory = "info";
   // //remove click handler set on rate dipping to 0
@@ -682,7 +683,8 @@ SuperHeroMindMap.prototype.getSuperhero = function (id) {
 };
 SuperHeroMindMap.prototype.notify = function () {
   //Empty any stale Notification modals
-  this.oModalContainer.empty();
+  this.oModalContainer.children()
+    .remove();
   //Create a new modal
   const oNotifyCard = document.createElement("notify-card");
   //Categorize the message as an:
@@ -736,6 +738,7 @@ SuperHeroMindMap.prototype.finish = function () {
     return this.showStatistics();
   }, 1500);
   //while the finish is delayed, show the spinner for visual effects
+  this.deActivate();
   return this.emptyDeckThenDelay();
 };
 SuperHeroMindMap.prototype.showMoves = function () {

@@ -1,6 +1,11 @@
 $(() => {
   const superHeroMindMap = games.oSuperheroMindMap();
-  superHeroMindMap.build();
-  superHeroMindMap.layout(".deck");
-  return superHeroMindMap.activate();
+  const play = function () {
+    superHeroMindMap.build();
+    superHeroMindMap.layout(".deck");
+    return superHeroMindMap.activate();
+  };
+  window.addEventListener('WebComponentsReady', (W) => {
+    return play();
+  });
 });
