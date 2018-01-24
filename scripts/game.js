@@ -444,7 +444,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         //call in some visual effects
         puffScore(score);
         //Is the game complete with all cards matched?
-        this.checkFinishCriteria();
+        this.updateFinishParams();
       } else {
         //flips take about 10 ms each,
         // two cards flipped equals 20ms
@@ -459,7 +459,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
       this.requestAnimationframe();
     }
     //on each click, rate the user based on moves, matches
-    return this.rate();
+    return (this.gameWon() && true) ? this.finish() : this.rate();
   }
   return false;
 };
@@ -469,9 +469,15 @@ SuperHeroMindMap.prototype.requestAnimationframe = function () {
   const diff_in_time = time_now - this.time_before;
   this.time_before = time_now;
   this.time += diff_in_time;
+  this.panelTime -= diff_in_time;
+  if (this.panelTime <= 0) {
+    this.notificationCategory = "error";
+    this.notificationMsg = "Game Over!! Replay anytime by clicking the replay game option on the panel below";
+    return this.finish();
+  }
   const seconds = this.time * 1000;
-  this.incrementTimerOnPanels();
-  return this.animation = window.requestAnimationFrame(() => {
+  this.tickTthemTimers();
+  return this.ticktock = window.requestAnimationFrame(() => {
     return this.requestAnimationframe();
   });
 };
@@ -497,11 +503,12 @@ SuperHeroMindMap.prototype.reset = function () {
   // this.oContainer.off("click");
   this.resetPanel();
   this.resetStatistics();
-  window.cancelAnimationFrame(this.animation);
+  window.cancelAnimationFrame(this.ticktock);
   this.time = 0;
   this.gameBegun = false;
   this.time_before = false;
-  this.animation = false;
+  this.ticktock = false;
+  this.panelTime = 180000;
 };
 SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
   //All text displaying containers on the game panel, need reset
@@ -728,7 +735,7 @@ SuperHeroMindMap.prototype.notify = function () {
   //Pop Up Notify
   this.oModalContainer.append(oNotifyCard);
 };
-SuperHeroMindMap.prototype.checkFinishCriteria = function () {
+SuperHeroMindMap.prototype.updateFinishParams = function () {
   //number of cards still unmatched
   const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
   //Is the game over? are all superheroes matched to their respective alter egoes?
@@ -740,9 +747,13 @@ SuperHeroMindMap.prototype.checkFinishCriteria = function () {
     this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
     You can now view some statistics, or, just hit replay`;
     this.notificationCategory = "cmesg";
+    $(".scorecard-timer-header")
+      .empty()
+      .html("Game Won In");
   }
-  //empty the deck and show some cool stats
-  return (this.matchesComplete) ? this.finish() : false;
+};
+SuperHeroMindMap.prototype.gameWon = function () {
+  return (this.matchesComplete && true);
 };
 SuperHeroMindMap.prototype.finish = function () {
   //Delay for visual effects
@@ -765,7 +776,6 @@ SuperHeroMindMap.prototype.finish = function () {
     return this.showStatistics();
   }, 1500);
   //while the finish is delayed, show the spinner for visual effects
-  this.deActivate();
   return this.emptyDeckThenDelay();
 };
 SuperHeroMindMap.prototype.updateMoveCountOnPanels = function () {
@@ -787,18 +797,20 @@ SuperHeroMindMap.prototype.updateScoreOnPanels = function () {
     .append(scoreText)
     .effect("bounce");
 };
-SuperHeroMindMap.prototype.incrementTimerOnPanels = function () {
-  const readableTime = new Date(this.time)
+SuperHeroMindMap.prototype.tickTthemTimers = function () {
+  const readableStatsTime = new Date(this.time)
     .toISOString()
     .slice(11, -5);
-  const timer = `<h2>${readableTime}</h2>`;
+  const readablePanelTime = new Date(this.panelTime)
+    .toISOString()
+    .slice(11, -5);
   this.oClockContainer.empty()
-    .html(timer);
+    .html(`<h2>${readablePanelTime}</h2>`);
   this.oScorecardClockContainer.empty()
-    .html(timer);
+    .html(`<h2>${readableStatsTime}</h2>`);
 };
 SuperHeroMindMap.prototype.showStatistics = function () {
-  window.cancelAnimationFrame(this.animation);
+  window.cancelAnimationFrame(this.ticktock);
   let star;
   let oContainer;
   //Show the overall rating on which the game ended
@@ -843,6 +855,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
 SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
   //Create a visually engaging spinning wheel
   const shuffle = $('<div class="shuffle"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
+  this.deActivate();
   //Empty the Deck
   //Append spinner
   //Add a timeout delay, because, after the last winning match, the spinner and the shuffle
