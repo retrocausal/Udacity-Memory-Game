@@ -220,6 +220,8 @@ SuperHeroMindMap.prototype.build = function () {
   }
   //shuffle the deck for display later via layout
   //copy over the slots generated via the Slot class, to a local "slots" property
+  this.shuffleDeck();
+  this.shuffleDeck();
   return this.shuffleDeck();
 };
 SuperHeroMindMap.prototype.layout = function () {
@@ -234,8 +236,19 @@ SuperHeroMindMap.prototype.layout = function () {
   this.oContainer = oContainer;
   //Initialize the notification box
   this.oModalContainer = $(".notify-modals");
-  //Initialize the scores container
+  //Initialize the panel containers
+  this.oMovesContainer = $(".move");
   this.oScoreContainer = $(".total-user-score");
+  this.oClockContainer = $(".stop-clock");
+  this.oRatingContainer = $(".rating");
+  this.oStatsHighScoreContainer = $('.highest-scoring-match');
+  this.oScorecardScoreContainer = $(".scorecard-game-score");
+  this.oScorecardClockContainer = $(".scorecard-stop-clock");
+  this.oScorecardMovesContainer = $(".scorecard-number-of-moves");
+  this.oScorecardRatingContainer = $(".scorecard-user-rating-stars");
+  this.oStatsMatchesContainer = $(".matches");
+  this.oStatsMismatchesContainer = $(".mismatches");
+  this.oStatisticsContainer = $(".statistics");
   //empty the Deck
   this.oContainer.empty();
   //Iteratively Add Slots with self contained cards to the flex deck
@@ -383,7 +396,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         //scores visualised, remove the score container
         return oScoreContainer.effect("explode", {}, 400, () => {
           oScoreContainer.remove();
-          return this.showScores();
+          return this.updateScoreOnPanels();
         });
       });
   };
@@ -440,11 +453,27 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
       }
     }
     //on each click of a crad on deck, display the moves completed
-    this.showMoves();
+    this.updateMoveCountOnPanels();
+    if (this.gameBegun === false) {
+      this.gameBegun = true;
+      this.requestAnimationframe();
+    }
     //on each click, rate the user based on moves, matches
     return this.rate();
   }
   return false;
+};
+SuperHeroMindMap.prototype.requestAnimationframe = function () {
+  const time_now = Date.now();
+  this.time_before = (this.time_before === false) ? time_now : this.time_before;
+  const diff_in_time = time_now - this.time_before;
+  this.time_before = time_now;
+  this.time += diff_in_time;
+  const seconds = this.time * 1000;
+  this.incrementTimerOnPanels();
+  return this.animation = window.requestAnimationFrame(() => {
+    return this.requestAnimationframe();
+  });
 };
 SuperHeroMindMap.prototype.reset = function () {
   // reset match check params
@@ -461,7 +490,6 @@ SuperHeroMindMap.prototype.reset = function () {
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
-  this.oScoreContainer.empty();
   //remove stale modal notifications
   this.notificationMsg = "";
   this.notificationCategory = "info";
@@ -469,28 +497,30 @@ SuperHeroMindMap.prototype.reset = function () {
   // this.oContainer.off("click");
   this.resetPanel();
   this.resetStatistics();
+  window.cancelAnimationFrame(this.animation);
+  this.time = 0;
+  this.gameBegun = false;
+  this.time_before = false;
+  this.animation = false;
 };
 SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
   //All text displaying containers on the game panel, need reset
   // ON - replay / a win
-  $(".rating")
-    .children()
+  this.oRatingContainer.children()
     .remove();
   //Hold off on adding 5 stars to the rating container just yet
   //Add them, only on user initiated replay, before the game is won
   if (!gameOver) {
     let star;
-    const oRatingContainer = $(".rating");
     for (let i = 0; i < 5; i++) {
       star = $('<span class="fa fa-star star"></span>');
-      oRatingContainer.append(star);
+      this.oRatingContainer.append(star);
     }
   }
-  $(".total-user-points")
-    .children()
-    .empty()
+  this.oClockContainer.empty();
+  this.oScoreContainer.empty()
     .html("--");
-  return $(".move")
+  return this.oMovesContainer
     .empty()
     .html("<h2>--</h2>");
 };
@@ -499,22 +529,21 @@ SuperHeroMindMap.prototype.resetStatistics = function () {
   //All text appended on to the stats panel during the game, need reset to null / "--"
   const highScoreText = "<h2>--</h2>";
   const initialScore = "<h2>--</h2>";
-  const highScoreContainer = $('.highest-scoring-match');
-  const scorecardScoreContainer = $(".scorecard-game-score");
-  highScoreContainer.empty()
+  this.oStatsHighScoreContainer.empty()
     .html(highScoreText);
-  scorecardScoreContainer.empty()
+  this.oScorecardScoreContainer.empty()
     .html(initialScore);
-  const oMatchesContainer = $(".matches");
-  const oMismatchesContainer = $(".mismatches");
-  oMatchesContainer.find("h3")
+  this.oStatsMatchesContainer.find("h3")
     .remove();
-  oMismatchesContainer.find("h3")
+  this.oStatsMismatchesContainer.find("h3")
     .remove();
+  this.oScorecardClockContainer.empty();
+  this.oScorecardMovesContainer.empty();
+  this.oScorecardRatingContainer.empty();
+  this.oScorecardClockContainer.empty();
   //Important! Hide the stats panel on
   // - replay
-  const oStatisticsContainer = $(".statistics");
-  return oStatisticsContainer.hide();
+  return this.oStatisticsContainer.hide();
 };
 SuperHeroMindMap.prototype.shuffleDeck = function () {
   //Initialize / re Initialize a local property to track slots in play
@@ -588,10 +617,9 @@ SuperHeroMindMap.prototype.rate = function () {
   //Set it to the current number of matches, So, in the event of a next match, the delta is always 1
   //else always 0
   this.matches = matches;
-  const rating = $(".rating");
   //Only Dip the rating, on an even move
   if (deltaHigh && onEvenMove) {
-    const star = rating.find("svg:first-child");
+    const star = this.oRatingContainer.find("svg:first-child");
     star.remove();
     this.ratingDip++;
   }
@@ -671,8 +699,7 @@ SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
   const alterEgo = oSuperhero.alterEgo;
   //Append the name / alterego concatenation to the stats panel's high scoring match container
   const highScoreText = `<h2>${name} / ${alterEgo} ( + ${score} )</h2>`;
-  const highScoreContainer = $('.highest-scoring-match');
-  return highScoreContainer.empty()
+  return this.oStatsHighScoreContainer.empty()
     .append(highScoreText);
 };
 SuperHeroMindMap.prototype.getSuperhero = function (id) {
@@ -741,45 +768,50 @@ SuperHeroMindMap.prototype.finish = function () {
   this.deActivate();
   return this.emptyDeckThenDelay();
 };
-SuperHeroMindMap.prototype.showMoves = function () {
+SuperHeroMindMap.prototype.updateMoveCountOnPanels = function () {
   //Display the number of moves on both the game panel while in play
   //And, the stats panel for display post finish either by exhaustion of moves, or a win
-  const moveCounter = $(".move");
-  const scorecardMoveStat = $(".scorecard-number-of-moves");
-  scorecardMoveStat.empty()
+  this.oScorecardMovesContainer.empty()
     .append(`<h2>${this.moves}</h2>`);
-  return moveCounter.empty()
+  return this.oMovesContainer.empty()
     .append(`<span class="move-count">${this.moves}</span>`);
 
 };
-SuperHeroMindMap.prototype.showScores = function () {
+SuperHeroMindMap.prototype.updateScoreOnPanels = function () {
   //Display score on both the game panel while the game is on
   //And, the hidden stats panel for display after the game ended
   const scoreText = `${this.userScore}`;
-  const scorecardScoreStat = $(".scorecard-game-score");
-  scorecardScoreStat.empty()
+  this.oScorecardScoreContainer.empty()
     .append(`<h2>${scoreText}</h2>`);
   return this.oScoreContainer.empty()
     .append(scoreText)
     .effect("bounce");
 };
+SuperHeroMindMap.prototype.incrementTimerOnPanels = function () {
+  const readableTime = new Date(this.time)
+    .toISOString()
+    .slice(11, -5);
+  const timer = `<h2>${readableTime}</h2>`;
+  this.oClockContainer.empty()
+    .html(timer);
+  this.oScorecardClockContainer.empty()
+    .html(timer);
+};
 SuperHeroMindMap.prototype.showStatistics = function () {
+  window.cancelAnimationFrame(this.animation);
   let star;
   let oContainer;
   //Show the overall rating on which the game ended
-  const scorecardRatingStat = $(".scorecard-user-rating-stars");
-  scorecardRatingStat.empty();
+  this.oScorecardRatingContainer.empty();
   let rating = 5 - this.ratingDip;
   if (rating < 1)
     rating = 1;
   for (let i = 0; i < rating; i++) {
     star = $('<span class="fa fa-star star"></span>');
-    scorecardRatingStat.append(star);
+    this.oScorecardRatingContainer.append(star);
   }
   //Create lists of all matched superHeroes
   //Also, a list of all unmatched superHeroes
-  const oMatchesContainer = $(".matches");
-  const oMismatchesContainer = $(".mismatches");
   const superheroKeys = Object.keys(this.superHeroes);
   const matchedSuperheroes = superheroKeys.reduce((accumalatedMatchedSuperheroes, currentKey) => {
     if (this.matchedSlotHashes.indexOf(currentKey) >= 0) {
@@ -797,17 +829,16 @@ SuperHeroMindMap.prototype.showStatistics = function () {
   for (const superhero of matchedSuperheroes) {
     oContainer = $('<h3 class="cards-found"></h3>');
     oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
-    oMatchesContainer.append(oContainer);
+    this.oStatsMatchesContainer.append(oContainer);
   }
   //Also, append the list of all unamtched superheroes to the mismatched container on the statistics panel
   for (const superhero of unmatchedSuperheroes) {
     oContainer = $('<h3 class="cards-not-found"></h3>');
     oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
-    oMismatchesContainer.append(oContainer);
+    this.oStatsMismatchesContainer.append(oContainer);
   }
   //Important! Show the stats after the player finishes
-  const oStatisticsContainer = $(".statistics");
-  oStatisticsContainer.fadeIn(1500);
+  this.oStatisticsContainer.fadeIn(1500);
 };
 SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
   //Create a visually engaging spinning wheel

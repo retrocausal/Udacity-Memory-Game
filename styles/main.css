@@ -91,14 +91,17 @@ main {
   justify-content: center;
 }
 
+,
 .highest-score,
 .highest-scoring-match,
 .matches,
 .mismatches,
+.scorecard-clock,
 .scorecard-game-score,
 .scorecard-moves,
 .scorecard-number-of-moves,
 .scorecard-rating,
+.scorecard-stop-clock,
 .scorecard-total-score,
 .scorecard-user-rating {
   width: 100%;
@@ -120,6 +123,7 @@ main {
 .highest-score-header,
 .scorecard-moves-header,
 .scorecard-rating-header,
+.scorecard-timer-header,
 .scorecard-total-score-header {
   font-family: "Quicksand",sans-serif;
   text-decoration: underline;
@@ -148,6 +152,7 @@ main {
   margin: auto;
 }
 
+.clock,
 .moves,
 .points,
 .ratings,
@@ -163,9 +168,13 @@ main {
 .rating,
 .replay-game,
 .restart,
+.stop-clock,
+.timer,
 .total-user-points,
 .user-points {
   width: 50%;
+  min-width: 50%;
+  max-width: 50%;
   text-align: center;
   display: flex;
   justify-content: center;
@@ -321,6 +330,7 @@ superhero-card {
     max-width: 25%;
   }
 
+  .clock,
   .moves,
   .points,
   .ratings,
@@ -343,10 +353,12 @@ superhero-card {
   .highest-scoring-match,
   .matches,
   .mismatches,
+  .scorecard-clock,
   .scorecard-game-score,
   .scorecard-moves,
   .scorecard-number-of-moves,
   .scorecard-rating,
+  .scorecard-stop-clock,
   .scorecard-total-score,
   .scorecard-user-rating {
     width: 50%;
@@ -357,6 +369,7 @@ superhero-card {
   .highest-score-header,
   .scorecard-moves-header,
   .scorecard-rating-header,
+  .scorecard-timer-header,
   .scorecard-total-score-header {
     text-decoration: none;
   }
@@ -383,6 +396,7 @@ superhero-card {
     margin-top: -25%;
   }
 
+  .clock,
   .moves,
   .points,
   .ratings,
