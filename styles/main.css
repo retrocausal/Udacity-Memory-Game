@@ -5,6 +5,7 @@
   margin: 0;
   width: 100%;
   font-family: "Montserrat",sans-serif;
+  line-height: 1;
 }
 
 BODY {
@@ -135,6 +136,7 @@ main {
   width: 33.33%;
   min-width: 33.33%;
   max-width: 33.33%;
+  line-height: 1;
 }
 
 .meta {

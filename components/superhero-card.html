@@ -1,11 +1,12 @@
-<link rel="import" href="superhero-styles.html">
+<!-- <link rel="import" href="superhero-styles.html"> -->
+<link rel="import" href="card-styles.html">
 <dom-module id="superhero-card">
   <template id="card">
     <custom-style>
-      <style media="screen" is="custom-style" include="superhero-styles"></style>
+      <style media="screen" is="custom-style" include="card-styler"></style>
     </custom-style>
-    <article class="superhero">
-      <section class="cover-image responsive-cover-image">
+    <article class="superhero-card">
+      <section class="superhero-name">
         <figure>
           <picture>
             <source srcset="{{superhero.cover.src}}-medium.{{superhero.cover.format}} 640w,
@@ -26,7 +27,7 @@
             <img class="superhero-cover responsive-cover-image-portrait" src="[[superhero.cover.src]]-small.{{superhero.cover.format}}" alt="">
           </picture>
           <figcaption>
-            <h2>[[superhero.name]]</h2>
+            <h2 class="caption-header">[[superhero.name]]</h2>
           </figcaption>
         </figure>
       </section>

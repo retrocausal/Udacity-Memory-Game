@@ -1,4 +1,3 @@
-<link rel="import" href="card-styles.html">
 <dom-module id="match-card">
   <template id="superhero-match-card">
     <custom-style>
@@ -23,10 +22,10 @@
 {{superhero.cover.src}}-x-large.{{superhero.cover.format}} 1280w"
               media="(min-width:1020px)"
               sizes="calc((75vw) / 6)">
-            <img class="superhero-cover responsive-cover-image-portrait" src="[[superhero.cover.src]]-small.{{superhero.cover.format}}" alt="">
+            <img class="match-cover responsive-cover-image-portrait" src="[[superhero.cover.src]]-small.{{superhero.cover.format}}" alt="">
           </picture>
           <figcaption>
-            <h2>[[superhero.alias]]</h2>
+            <h2 class="caption-header">[[superhero.alias]]</h2>
           </figcaption>
         </figure>
       </section>
