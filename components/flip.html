@@ -3,7 +3,7 @@
     <custom-style>
       <style media="screen" is="custom-style" include="card-styler"></style>
       <style media="screen">
-        h2 {
+        .caption-header {
           font-family: "Quicksand",sans-serif;
         }
       </style>
@@ -27,7 +27,7 @@
 {{flipcover.cover.src}}-x-large.{{flipcover.cover.format}} 1280w"
               media="(min-width:1020px)"
               sizes="calc((75vw) / 6)">
-            <img class="flipcover-cover responsive-cover-image-portrait" src="[[flipcover.cover.src]]-small.{{flipcover.cover.format}}" alt="">
+            <img class="flipcover-cover responsive-cover-image-portrait" src="[[flipcover.cover.src]]-small.{{flipcover.cover.format}}" alt="[[flipcover.cover.alt]]">
           </picture>
           <figcaption>
             <h2 class="caption-header">[[flipcover.name]]</h2>

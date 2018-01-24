@@ -76,6 +76,7 @@ const Superhero = function (...attributes) {
   this.cover.src = this.assetSrc + cover;
   this.name = name;
   this.alterEgo = alterEgo;
+  this.cover.alt = `front end of a card on deck, showing an image and the name of ${this.name}`;
   this.powers = powers;
   this.origin = origin;
   this.city = city;
@@ -109,7 +110,8 @@ Superhero.prototype.createTradeCards = function () {
     alias: this.alterEgo,
     cover: {
       src: this.assetSrc + "justiceleague",
-      format: "jpg"
+      format: "jpg",
+      alt: `front end of a card on deck, showing the alter ego and an image for ${this.name}`
     }
   };
   this.match = new matchCard(superhero);
@@ -130,7 +132,8 @@ Slot.prototype.push = function (content, hash) {
     name: "DC Multiverse",
     cover: {
       src: this.assetSrc + "dcuniverse",
-      format: "jpg"
+      format: "jpg",
+      alt: "rear face of the card on deck, showing a picture of the dc multiverse"
     }
   });
   const currentContent = "rear";
@@ -253,10 +256,7 @@ SuperHeroMindMap.prototype.addCards = function () {
     //JQ now clones this div
     const unnecessaryContainerForSHODDYjQueryUI = $('<div class="placeholder"></div>')
       .css({
-        //JQ AT IT AGAIN!
-        //JUVENILE AT BEST TO RANDOMLY CHANGE THE DISPLAY CSS ATTRIBUTE
-        //AND IGNORANT TO NOT CHANGE IT BACK JQ ON REAPPEND / SHOW!
-        display: "block !important",
+        display: "block",
         width: "100%"
       });
     //Assign an ID, to the card
