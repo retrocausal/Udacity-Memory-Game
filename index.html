@@ -10,6 +10,12 @@
     <link rel="prefetch" href="https://fonts.googleapis.com/css?family=Montserrat:700,400%7CCinzel+Decorative%7CLibre+Barcode+39+Extended%7CQuicksand:700%7CRaleway:500" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400%7CCinzel+Decorative%7CLibre+Barcode+39+Extended%7CQuicksand:400,700%7CRaleway:500" rel="stylesheet">
     <script async="async" defer="defer" src="https://use.fontawesome.com/releases/v5.0.1/js/all.js"></script>
+    <script src="./bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="./bower_components/polymer/polymer.html">
+    <link rel="import" href="components/superhero-card.html">
+    <link rel="import" href="components/match-card.html">
+    <link rel="import" href="components/flip.html">
+    <link rel="import" href="components/modal.html">
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/screen.css">
     <title>Super Hero Deck</title>
@@ -22,7 +28,7 @@
     <main>
       <div class="breathe"></div>
       <section class="deck-space">
-        <h3 class="instructions"></h3>
+        <h3 class="instructions">Instructions</h3>
         <div class="deck">
           <span class="fa fa-cog fa-spin fa-3x"></span>
         </div>
@@ -45,23 +51,31 @@
             <div class="highest-score">
               <h2 class="highest-score-header">Highest Scoring Match</h2>
             </div>
-            <div class="highest-scoring-match"></div>
+            <div class="highest-scoring-match">
+              <!-- to be filled dynamically during the game -->
+            </div>
           </div>
           <div class="breathe"></div>
           <div class="scorecard">
             <div class="scorecard-moves">
               <h2 class="scorecard-moves-header">Moves</h2>
             </div>
-            <div class="scorecard-number-of-moves"></div>
+            <div class="scorecard-number-of-moves">
+              <!-- to be filled dynamically during the game -->
+            </div>
             <div class="scorecard-total-score">
               <h2 class="scorecard-total-score-header">Total Score</h2>
             </div>
-            <div class="scorecard-game-score"></div>
+            <div class="scorecard-game-score">
+              <!-- to be filled dynamically during the game -->
+            </div>
             <div class="scorecard-rating">
               <h2 class="scorecard-rating-header">User Rating</h2>
             </div>
             <div class="scorecard-user-rating">
-              <div class="scorecard-user-rating-stars"></div>
+              <div class="scorecard-user-rating-stars">
+                <!-- to be filled dynamically during the game -->
+              </div>
             </div>
           </div>
         </article>
@@ -72,7 +86,9 @@
       <h3>Game Panel</h3>
       <section class="moves">
         <h3 class="move-counter">On Move:</h3>
-        <div class="move"></div>
+        <div class="move">
+          <!-- to be filled dynamically during the game -->
+        </div>
       </section>
       <section class="ratings">
         <h3 class="player-rating">Player Rating:</h3>
@@ -87,7 +103,9 @@
       <section class="points">
         <h3 class="user-points">Score:</h3>
         <div class="total-user-points">
-          <h1 class="total-user-score"></h1>
+          <h2 class="total-user-score">
+            <!-- to be filled dynamically during the game -->
+          </h2>
         </div>
       </section>
       <section class="replay">
@@ -206,13 +224,7 @@
       </section>
     </aside>
     <footer>
-      <script src="./bower_components/webcomponentsjs/webcomponents-lite.js"></script>
       <script src="//code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-      <link rel="import" href="./bower_components/polymer/polymer.html">
-      <link rel="import" href="components/superhero-card.html">
-      <link rel="import" href="components/match-card.html">
-      <link rel="import" href="components/flip.html">
-      <link rel="import" href="components/modal.html">
       <script src="./scripts/jquery-ui.min.js"></script>
       <script src="./scripts/game.js"></script>
       <script src="./scripts/config.js"></script>
