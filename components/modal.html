@@ -162,6 +162,13 @@
         const modal = this.root.querySelector("#modal-dialog");
         modal.center();
         modal.open();
+        if (this.info) {
+          setTimeout(() => {
+            return (modal.opened && true)
+              ? modal.close()
+              : false;
+          }, 1400);
+        }
       }
     }
     window.customElements.define(notifyCard.is, notifyCard);

@@ -452,18 +452,19 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         setTimeout(onMismatch, 29);
       }
     }
-    //on each click of a crad on deck, display the moves completed
-    this.updateMoveCountOnPanels();
     if (this.gameBegun === false) {
       this.gameBegun = true;
       this.startTickerTimers();
     }
+    //on each click of a crad on deck, display the moves completed
+    this.updateMoveCountOnPanels();
     //on each click, rate the user based on moves, matches
     this.rate();
     const gameWon = this.gameWon();
     const ratingTooLow = this.ratingDipBoundsReached();
     const finishCondition = (gameWon || ratingTooLow);
-    return (finishCondition && true) ? this.finish() : true;
+    const shuffleNow = (this.shuffleAtWhim && !finishCondition) ? this.randomShuffle() : false;
+    return (finishCondition && true) ? this.finish() : false;
   }
   return false;
 };
@@ -515,23 +516,27 @@ SuperHeroMindMap.prototype.reset = function () {
   this.matches = 0;
   this.ratingDip = 0;
   this.moveOnLastMatch = 0;
+  this.shuffleAtWhim = false;
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
   //remove stale modal notifications
   this.notificationMsg = "";
   this.notificationCategory = "info";
-  // //remove click handler set on rate dipping to 0
-  // this.oContainer.off("click");
+  //reset panels
   this.resetPanel();
   this.resetStatistics();
+  //remove a request to the global object for animation frames if any
   this.ticktock = window.cancelAnimationFrame(this.ticktock);
   this.ticktock = false;
+  //reset the time difference helpers
   this.time = 0;
   this.gameBegun = false;
   this.time_before = false;
   this.panelTime = 180021;
   this.timeOver = false;
+  //reset the move the deck was shuffled on
+  this.shuffledOnMove = 0;
 };
 SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
   //All text displaying containers on the game panel, need reset
@@ -576,11 +581,11 @@ SuperHeroMindMap.prototype.resetStatistics = function () {
   return this.oStatisticsContainer.hide();
 };
 SuperHeroMindMap.prototype.shuffleDeck = function () {
-  //Initialize / re Initialize a local property to track slots in play
-  this.slots = {};
   //Shuffle the Deck
   //Grab all slots and their respective cards
   const slots = this.slot.shuffleSlots();
+  //Initialize / re Initialize a local property to track slots in play
+  this.slots = {};
   //loop over available shuffled slots
   //Store them all in the tracker for this play/hand
   for (const slot of slots) {
@@ -638,15 +643,25 @@ SuperHeroMindMap.prototype.rate = function () {
   //Whether this move recorded a Match - either 0(No!!) or 1(Yes!)
   const deltaMatches = matches - this.matches;
   //Maximum number of moves granted to log a match - Half of the number of Cards Unmatched discounting the currently to be matched card
-  const maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / 2));
-  //Determine if, The rating should dip
-  const deltaHigh = ((deltaMatches == 0) && (deltaMoves >= maxMovesDelta));
+  const factor = (cardsAvailable > 4) ? 2 : 1;
+  let maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / factor));
   //Determine if this is an even move
   const onEvenMove = (this.moves % 2 == 0 && true);
+  //Determine if, The rating should dip
+  const deltaHigh = ((deltaMatches == 0) && (deltaMoves >= maxMovesDelta));
   //Reset matches till now
   //Set it to the current number of matches, So, in the event of a next match, the delta is always 1
   //else always 0
   this.matches = matches;
+  //How many moves have been registered on the counter since the last shuffle?
+  const deltaShuffle = this.moves - this.shuffledOnMove;
+  //Should we shuffle whimsically?
+  //If max permissible number of moves have been exceeded, and the game is on an even move
+  //then, check if the last shuffle was made a while back
+  //if so, shuffle away!
+  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && (deltaShuffle >= (maxMovesDelta / 2)));
+  //set the move the deck was last shuffled on, to this move
+  this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
   //Only Dip the rating, on an even move
   if (deltaHigh && onEvenMove) {
     const star = this.oRatingContainer.find("svg:first-child");
@@ -677,6 +692,46 @@ SuperHeroMindMap.prototype.rate = function () {
     maxMovesDelta
   };
   return this.scoreMenu = scoreMenu;
+};
+SuperHeroMindMap.prototype.randomShuffle = function () {
+  //delay a blink for visual registers
+  setTimeout(() => {
+    //Extract all slotted cards into cards
+    const cards = this.oContainer.find("article.card");
+    const slots = this.slots;
+    //notify the user, that the deck is being shuffled
+    this.notify();
+    //Delay this till the flipped cards have been flipped back, and then some more
+    //just wait a sec and some
+    setTimeout(() => {
+      this.oContainer.effect("shake", {
+        times: 5,
+        direction: "right"
+      }, "fast");
+      //shuffle well
+      this.shuffleDeck();
+      this.shuffleDeck();
+      //layout the shuffled deck
+      cards.each((cardIndex, card) => {
+        const id = $(card)
+          .attr("id");
+        const slot = this.slots[id];
+        const order = slot.order;
+        $(card)
+          .css({
+            "order": order,
+            "display": "block"
+          })
+          .fadeOut()
+          .fadeIn();
+      });
+      //unset the shuffle parameter and set it to false, so  the next shuffle happens later
+      //and not on the next click
+      return this.shuffleAtWhim = false;
+    }, 1800);
+  }, 50);
+  this.notificationCategory = "info";
+  this.notificationMsg = "Shuffling Deck";
 };
 SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
   return (this.ratingDip > 4);
@@ -860,6 +915,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
     if (this.matchedSlotHashes.indexOf(currentKey) < 0) {
       accumalatedUnMatchedSuperheroes.push(this.superHeroes[currentKey]);
     }
+
     return accumalatedUnMatchedSuperheroes;
   }, []);
   //Append the list of all matched superheroes to the mathes container on the stats panel
