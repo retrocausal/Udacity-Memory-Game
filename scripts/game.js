@@ -456,29 +456,45 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     this.updateMoveCountOnPanels();
     if (this.gameBegun === false) {
       this.gameBegun = true;
-      this.requestAnimationframe();
+      this.startTickerTimers();
     }
     //on each click, rate the user based on moves, matches
-    return (this.gameWon() && true) ? this.finish() : this.rate();
+    this.rate();
+    const gameWon = this.gameWon();
+    const ratingTooLow = this.ratingDipBoundsReached();
+    const finishCondition = (gameWon || ratingTooLow);
+    return (finishCondition && true) ? this.finish() : true;
   }
   return false;
 };
-SuperHeroMindMap.prototype.requestAnimationframe = function () {
+SuperHeroMindMap.prototype.startTickerTimers = function () {
+  //time this animation frame
   const time_now = Date.now();
+  //time last animation frame
   this.time_before = (this.time_before === false) ? time_now : this.time_before;
+  //diff in time between two frames ~ 1 milliseconds
   const diff_in_time = time_now - this.time_before;
+  //set time last animation frame to time now this animation frame
+  //on the next frame, it is handy to find the diff
   this.time_before = time_now;
+  //Actual time elapsed since the game began
+  //sum of differences between animation frames
+  //Also, the time to count down on the panel is the deduction of time difference between animation frames
+  //from the inital value of 180000 milliseconds
   this.time += diff_in_time;
   this.panelTime -= diff_in_time;
+  //if 3 minutes are up, stop the game
+  //show stats
   if (this.panelTime <= 0) {
     this.notificationCategory = "error";
     this.notificationMsg = "Game Over!! Replay anytime by clicking the replay game option on the panel below";
     return this.finish();
   }
-  const seconds = this.time * 1000;
+  //count down/up timers
   this.tickTthemTimers();
+  //loop frames
   return this.ticktock = window.requestAnimationFrame(() => {
-    return this.requestAnimationframe();
+    return this.startTickerTimers();
   });
 };
 SuperHeroMindMap.prototype.reset = function () {
@@ -635,20 +651,17 @@ SuperHeroMindMap.prototype.rate = function () {
   //Notify the user, that they need to restart the game
   //Also deActivate the deck of cards
   if (this.ratingDip > 4) {
-    const notify = () => {
+    const alert = () => {
       this.oContainer.effect("shake", {
         times: 5,
         direction: "right"
-      }, "fast", () => {
-        //this.deActivate();
-        this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
-        this.notificationCategory = "error";
-        return this.finish();
-      });
+      }, "fast");
     };
     //Let the deck shake for a while for visual effects
     //Then, NOTFIY
-    setTimeout(notify, 120);
+    setTimeout(alert, 110);
+    this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
+    this.notificationCategory = "error";
   }
   //define a menu of scoring parameters
   const scoreMenu = {
@@ -657,6 +670,9 @@ SuperHeroMindMap.prototype.rate = function () {
     maxMovesDelta
   };
   return this.scoreMenu = scoreMenu;
+};
+SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
+  return (this.ratingDip > 4);
 };
 SuperHeroMindMap.prototype.score = function () {
   //Arbitrary max points per match
@@ -770,11 +786,13 @@ SuperHeroMindMap.prototype.finish = function () {
         "width": "auto"
       })
       .empty();
-    //notify the user, that he has either failed, or won
-    this.notify();
     //then , finally, load the stats
     return this.showStatistics();
   }, 1500);
+  //notify the user, that he has either failed, or won
+  setTimeout(() => {
+    return this.notify();
+  }, 1000);
   //while the finish is delayed, show the spinner for visual effects
   return this.emptyDeckThenDelay();
 };
@@ -850,7 +868,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
     this.oStatsMismatchesContainer.append(oContainer);
   }
   //Important! Show the stats after the player finishes
-  this.oStatisticsContainer.fadeIn(1500);
+  this.oStatisticsContainer.fadeIn(1505);
 };
 SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
   //Create a visually engaging spinning wheel
@@ -871,7 +889,7 @@ SuperHeroMindMap.prototype.emptyDeckThenDelay = function () {
         "min-height": this.oCanvas.height
       })
       .append(shuffle);
-  }, 600);
+  }, 1005);
 };
 SuperHeroMindMap.prototype.restart = function () {
   this.emptyDeckThenDelay();
