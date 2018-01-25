@@ -29,7 +29,35 @@
       <div class="breathe"></div>
       <section class="deck-space">
         <h3 class="instructions">Instructions</h3>
-        <div class="deck">
+        <div class="breathe"></div>
+        <div class="list-of-instructions">
+          <ul class="instructions-list">
+            <li class="instructions-list-item">You have to match a total of 12 superheroes to their respective alter egoes</li>
+            <li class="instructions-list-item">On each match , you are awarded a number of points based on :
+              <ol class="instructions-list-subitem">
+                <li class="subitem-list-item">The current rating you are playing on</li>
+                <li class="subitem-list-item">the number of moves permitted to find the current match</li>
+              </ol>
+            </li>
+            <li class="instructions-list-item">On a mismatch, no points are deducted</li>
+            <li class="instructions-list-item">If after a pre calculated number of moves, you have not found the next match, or a single match
+              <ol class="instructions-list-subitem">
+                <li class="subitem-list-item">The deck shuffles</li>
+                <li class="subitem-list-item">the rating dips</li>
+              </ol>
+            </li>
+            <li class="instructions-list-item">If the rating dips below 1 star
+              <ol class="instructions-list-subitem">
+                <li class="subitem-list-item">The game resets</li>
+              </ol>
+            </li>
+            <li class="instructions-list-item">You have 3 minutes to match all cards on deck failing which, the game resets
+            </li>
+            <li class="instructions-list-item">At any point, If you wish, you may just hit replay, and reset and restart</li>
+          </ul>
+        </div>
+        <div class="breathe"></div>
+        <div class="deck" id="deck">
           <span class="fa fa-cog fa-spin fa-3x"></span>
         </div>
       </section>
@@ -119,7 +147,7 @@
       <section class="replay">
         <h3 class="replay-game">Replay Game:</h3>
         <div class="restart">
-          <a class="reload" href="#">
+          <a class="reload" href="#deck">
             <span class="fa fa-redo-alt fa-2x"></span>
           </a>
         </div>

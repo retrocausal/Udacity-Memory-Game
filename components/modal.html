@@ -45,10 +45,12 @@
         font-weight: bold;
         margin-bottom: 0.5rem;
       }
+      .footer,
+      .header,
       .main {
+        width: 100%;
         display: flex;
         flex-wrap: wrap;
-        flex-direction: column;
         justify-content: space-around;
         align-items: center;
         line-height: 2;
@@ -69,13 +71,20 @@
         margin: 1rem auto;
       }
       :host > ::slotted(*) {
-        padding: 0 1em;
+        padding: 0 1rem !important;
       }
       paper-dialog,
       paper-dialog-scrollable {
         width: 83vw;
         min-width: 81vw;
-        min-height: 300px;
+        max-width: 100%;
+        min-height: 210px;
+      }
+      paper-dialog {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
       }
     </style>
     <section class="modal">

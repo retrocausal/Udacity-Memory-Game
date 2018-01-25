@@ -935,7 +935,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
 };
 SuperHeroMindMap.prototype.emptyDeck = function () {
   //Create a visually engaging spinning wheel
-  const shuffle = $('<div class="shuffle"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
+  const shuffle = $('<div class="shuffle" id="spinner-cog"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   this.deActivate();
   //Empty the Deck
   //Append spinner
@@ -948,10 +948,12 @@ SuperHeroMindMap.prototype.emptyDeck = function () {
       });
     //Set the Deck's dimensions to be retained to what they were before emptying it's content
     //Display that spinning wheel indicating, the cards are being shuffled, and a new game is being initialized
-    return this.oContainer.css({
+    this.oContainer.css({
         "min-height": this.oCanvas.height
       })
       .append(shuffle);
+    return $("#spinner-cog")
+      .focus();
   }, 1005);
 };
 SuperHeroMindMap.prototype.restart = function () {
@@ -959,7 +961,7 @@ SuperHeroMindMap.prototype.restart = function () {
   //Relayout the game
   const relayoutDeck = () => {
     //reset the container for the deck
-    this.oContainer.empty();
+    this.oContainer.empty()
     //The shuffle takes time. give it some time
     setTimeout(() => {
       return this.oContainer.css({

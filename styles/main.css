@@ -64,13 +64,52 @@ main {
   margin: auto;
 }
 
+.deck-space {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
 .statistics {
   display: none;
 }
 
 .deck,
-.instructions {
+.instructions,
+.list-of-instructions {
   width: 100%;
+}
+
+.list-of-instructions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.instructions-list {
+  width: 100%;
+  margin: 0;
+  list-style-type: disc;
+  list-style-position: inside;
+  font-size: x-large;
+}
+
+.instructions-list-item,
+.instructions-list-subitem {
+  list-style-position: inside;
+  width: 100%;
+  color: #edd8d8;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  font-family: "Montserrat",sans-serif;
+  line-height: 1.5;
+}
+
+.subitem-list-item {
+  list-style-type: lower-greek;
+  padding: 0.5rem;
+  font-size: large;
+  font-family: "Quicksand",sans-serif;
 }
 
 .game-stats {
@@ -134,6 +173,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
+  position: relative;
 }
 
 .card {
@@ -212,6 +252,8 @@ main {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  position: absolute;
+  top: 25%;
 }
 
 A,
@@ -342,7 +384,7 @@ superhero-card {
 
   .shuffle {
     justify-content: center;
-    margin-top: -50%;
+    top: 45%;
   }
 
   .reload {
@@ -378,6 +420,10 @@ superhero-card {
   .mismatches {
     justify-content: flex-start;
   }
+
+  .instructions-list {
+    width: 100%;
+  }
 }
 @media screen and (min-width:1020px) {
   .deck-space,
@@ -390,10 +436,6 @@ superhero-card {
     width: calc(75vw / 6);
     min-width: calc(75vw / 6);
     max-width: calc(75vw / 6);
-  }
-
-  .shuffle {
-    margin-top: -25%;
   }
 
   .clock,
