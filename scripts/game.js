@@ -657,13 +657,14 @@ SuperHeroMindMap.prototype.rate = function () {
   const deltaShuffle = this.moves - this.shuffledOnMove;
   //Should we shuffle whimsically?
   //If max permissible number of moves have been exceeded, and the game is on an even move
-  //then, check if the last shuffle was made a while back
+  //then, check if the last shuffle was made a while back - at least 6 moves / 3 attempts ago
   //if so, shuffle away!
-  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && (deltaShuffle >= (maxMovesDelta / 2)));
+  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && (deltaShuffle >= (maxMovesDelta / 2)) && deltaShuffle > 4);
   //set the move the deck was last shuffled on, to this move
   this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
   //Only Dip the rating, on an even move
-  if (deltaHigh && onEvenMove) {
+  //Also, check if the last shuffle is spaced at least 4 moves from a rting dip below 1
+  if (deltaHigh && onEvenMove && deltaShuffle > 2) {
     const star = this.oRatingContainer.find("svg:first-child");
     star.remove();
     this.ratingDip++;
