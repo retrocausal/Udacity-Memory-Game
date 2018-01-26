@@ -132,7 +132,9 @@
         </section>
         <section class="footer">
           <div class="buttons">
-            <paper-button class="button" dialog-dismiss="dialog-dismiss" autofocus="autofocus" raised="raised" on-tap="dismiss">OK</paper-button>
+            <template is="dom-if" if="{{buttons}}">
+              <paper-button class="button" dialog-dismiss="dialog-dismiss" autofocus="autofocus" raised="raised" on-tap="dismissMe">OK</paper-button>
+            </template>
           </div>
         </section>
       </paper-dialog>
@@ -149,21 +151,31 @@
       static get properties() {
         return {
           error: {
-            type: Boolean
+            type: Boolean,
+            value: false
           },
           info: {
-            type: Boolean
+            type: Boolean,
+            value: false
           },
           cmesg: {
-            type: Boolean
+            type: Boolean,
+            value: false
           },
           message: {
             type: String,
             value: ""
+          },
+          buttons: {
+            type: Boolean,
+            computed: 'showButtons(error,info,cmesg)'
           }
         };
       }
-      dismiss() {
+      showButtons(e, i, c) {
+        return (e || c);
+      }
+      dismissMe() {
         return this.root.querySelector("#modal-dialog").close();
       }
       connectedCallback() {
