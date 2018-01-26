@@ -48,6 +48,53 @@ main {
   flex-direction: column;
 }
 
+img {
+  max-width: 100%;
+}
+
+.cog {
+  /*background-color: #333;*/
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 128px;
+  height: 128px;
+  line-height: 1;
+  animation-name: spin;
+  animation-duration: 50000ms;
+}
+
+.cog-wheel {
+  margin: 0;
+  padding: 0;
+  font-size: 128px;
+  line-height: 1;
+  width: 100%;
+  text-align: center;
+  animation-name: reverse;
+  animation-duration: 10000ms;
+  animation-iteration-count: infinite;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(359.99deg);
+  }
+}
+@keyframes reverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
 .breathe {
   line-height: 5;
   width: 100%;
@@ -82,7 +129,7 @@ main {
 
 .list-of-instructions {
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
 }
 
@@ -353,98 +400,10 @@ superhero-card {
   height: auto;
   font-size: larger;
   font-family: "Cinzel Decorative",serif;
+  color: #edd8d8;
 }
 
 .credit-image {
   max-width: 100%;
   width: 150px;
-}
-@media screen and (min-width:765px) {
-  .deck-space,
-  .meta,
-  .statistics {
-    width: 83vw;
-  }
-
-  .card {
-    width: 25%;
-    min-width: 25%;
-    max-width: 25%;
-  }
-
-  .clock,
-  .moves,
-  .points,
-  .ratings,
-  .replay {
-    width: 50%;
-    max-width: 50%;
-    min-width: 50%;
-  }
-
-  .shuffle {
-    justify-content: center;
-    top: 45%;
-  }
-
-  .reload {
-    margin-top: 0.51rem;
-  }
-
-  .highest-score,
-  .highest-scoring-match,
-  .matches,
-  .mismatches,
-  .scorecard-clock,
-  .scorecard-game-score,
-  .scorecard-moves,
-  .scorecard-number-of-moves,
-  .scorecard-rating,
-  .scorecard-stop-clock,
-  .scorecard-total-score,
-  .scorecard-user-rating {
-    width: 50%;
-    max-width: 50%;
-    min-width: 50%;
-  }
-
-  .highest-score-header,
-  .scorecard-moves-header,
-  .scorecard-rating-header,
-  .scorecard-timer-header,
-  .scorecard-total-score-header {
-    text-decoration: none;
-  }
-
-  .matches,
-  .mismatches {
-    justify-content: flex-start;
-  }
-
-  .instructions-list {
-    width: 100%;
-  }
-}
-@media screen and (min-width:1020px) {
-  .deck-space,
-  .meta,
-  .statistics {
-    width: 75vw;
-  }
-
-  .card {
-    width: calc(75vw / 6);
-    min-width: calc(75vw / 6);
-    max-width: calc(75vw / 6);
-  }
-
-  .clock,
-  .moves,
-  .points,
-  .ratings,
-  .replay {
-    width: 33.33%;
-    max-width: 33.33%;
-    min-width: 33.33%;
-  }
 }
