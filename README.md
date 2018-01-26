@@ -1,6 +1,6 @@
-# udacity-mind-game
+# Udacity-mind-game
  - A game where a player needs to map `n` number of cards to `n` number of matching cards.
-  -- Each match in a game is awarded a number of points as score, added to the total score at the end of the game.
+   -Each match in a game is awarded a number of points as score, added to the total score at the end of the game.
  - On failing to register a single match by a precalculated `m` number of moves
    - The deck shuffles itself
    - The rating the player is on, takes a hit
@@ -20,6 +20,7 @@
  - The game has a maximum time to win of 3 minutes
    - The timer on the panel counts down
    - The time taken on the stats panel counts up
+   - The time taken does **NOT** affect the rating
  
  ## Install and Play
   - Clone this repo
