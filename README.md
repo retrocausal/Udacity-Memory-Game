@@ -26,15 +26,17 @@
   - Clone this repo
     - Run 
         ```
+           npm install -g bower
+           
            bower install
          ```
 >  **NOTE**
 > - [Bower][2], is a frontend package manager
-> - [Polymer][3], is a library by google, offereing syntactic eas to implement webcomponents
-> - This game, uses Polymer, to implement and layout all the cards on the deck
 >    - You can install Bower, by running 
         ```npm install bower```
 > - If you do not know what npm is, you can learn about node and npm [here][1]
+> - [Polymer][3], is a library by google, offereing syntactic eas to implement webcomponents
+> - This game, uses Polymer, to implement and layout all the cards on the deck
 
 
 
