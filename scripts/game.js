@@ -533,7 +533,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.time = 0;
   this.gameBegun = false;
   this.time_before = false;
-  this.panelTime = 180021;
+  this.panelTime = 720021;
   this.timeOver = false;
   //reset the move the deck was shuffled on
   this.shuffledOnMove = 0;
@@ -643,7 +643,7 @@ SuperHeroMindMap.prototype.rate = function () {
   //Whether this move recorded a Match - either 0(No!!) or 1(Yes!)
   const deltaMatches = matches - this.matches;
   //Maximum number of moves granted to log a match - Half of the number of Cards Unmatched discounting the currently to be matched card
-  const factor = (cardsAvailable > 4) ? 2 : 1;
+  const factor = (cardsAvailable > 4) ? 1 : 1;
   let maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / factor));
   //Determine if this is an even move
   const onEvenMove = (this.moves % 2 == 0 && true);
