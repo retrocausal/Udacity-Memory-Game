@@ -517,6 +517,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.ratingDip = 0;
   this.moveOnLastMatch = 0;
   this.shuffleAtWhim = false;
+  this.ratingNotified = false;
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
@@ -547,7 +548,7 @@ SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
   //Add them, only on user initiated replay, before the game is won
   if (!gameOver) {
     let star;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       star = $('<span class="fa fa-star star"></span>');
       this.oRatingContainer.append(star);
     }
@@ -664,7 +665,7 @@ SuperHeroMindMap.prototype.rate = function () {
   this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
   //Only Dip the rating, on an even move
   //Also, check if the last shuffle is spaced at least 4 moves from a rting dip below 1
-  if (deltaHigh && onEvenMove && deltaShuffle > 2) {
+  if (deltaHigh && onEvenMove && deltaShuffle > 2 && this.ratingDip < 2) {
     const star = this.oRatingContainer.find("svg:first-child");
     star.remove();
     this.ratingDip++;
@@ -673,17 +674,19 @@ SuperHeroMindMap.prototype.rate = function () {
   //All 5 of them have been deducted,
   //Notify the user, that they need to restart the game
   //Also deActivate the deck of cards
-  if (this.ratingDip > 4) {
+  if (this.ratingDip >= 2 && this.ratingNotified === false) {
     const alert = () => {
       this.oContainer.effect("shake", {
         times: 5,
         direction: "right"
       }, "fast");
+      this.notify();
+      return this.ratingNotified = true;
     };
     //Let the deck shake for a while for visual effects
     //Then, NOTFIY
     setTimeout(alert, 110);
-    this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
+    this.notificationMsg = "You have exhausted the number of moves to find a match while maintaining a rating .Playing on a single rating point";
     this.notificationCategory = "error";
   }
   //define a menu of scoring parameters
@@ -735,7 +738,8 @@ SuperHeroMindMap.prototype.randomShuffle = function () {
   this.notificationMsg = "Shuffling Deck";
 };
 SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
-  return (this.ratingDip > 4);
+  //return (this.ratingDip > 4);
+  return false;
 };
 SuperHeroMindMap.prototype.score = function () {
   //Arbitrary max points per match
