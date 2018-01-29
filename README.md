@@ -1,4 +1,4 @@
-# Udacity-mind-game
+# Udacity-Memory-Game
  - A game where a player needs to map `n` number of cards to `n` number of matching cards.
      - Each match in a game is awarded a number of points as score, added to the total score at the end of the game.
  - On failing to register a single match by a precalculated `m` number of moves
