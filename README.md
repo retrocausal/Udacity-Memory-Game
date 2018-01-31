@@ -4,8 +4,8 @@
  - On failing to register a single match by a precalculated `m` number of moves
    - The deck shuffles itself
    - The rating the player is on, takes a hit
- - There are a maximum of 5 star ratings, and on a rating dip below or equal to 1,
-   - The game resets
+ - There are a maximum of 3 star ratings, and on a rating dip below or equal to 1,
+   - The game shuffles
    - On each rating dip,
      - The score per match reduces by a factor `f`
  - The game accumalates statistics such as 
@@ -17,12 +17,17 @@
    - either by a win (match all cards)
    - or because of a timeout
    - or because of exhausting a dynamically progressively calculated number of maximum moves 
- - The game has a maximum time to win of 3 minutes
+ - The game has a maximum time to win of 12 minutes
    - The timer on the panel counts down
    - The time taken on the stats panel counts up
    - The time taken does **NOT** affect the rating
  
  ## Install and Play
+  ### Dependencies
+    - npm
+    - bower
+    - apache/nginx
+    
   - Clone this repo
     - Run 
         ```
