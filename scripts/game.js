@@ -739,6 +739,11 @@ SuperHeroMindMap.prototype.randomShuffle = function () {
 };
 SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
   //return (this.ratingDip > 4);
+  /*
+   **The not so udacious reviewer requires a fun game to be not so fun
+   ** The adament requirement / suggestion is to not limit the number of moves
+   ** Hence, block the end parameters by returning false
+   */
   return false;
 };
 SuperHeroMindMap.prototype.score = function () {
