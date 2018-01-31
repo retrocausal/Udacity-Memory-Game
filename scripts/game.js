@@ -900,7 +900,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
   let oContainer;
   //Show the overall rating on which the game ended
   this.oScorecardRatingContainer.empty();
-  let rating = 5 - this.ratingDip;
+  let rating = 3 - this.ratingDip;
   if (rating < 1)
     rating = 1;
   for (let i = 0; i < rating; i++) {
