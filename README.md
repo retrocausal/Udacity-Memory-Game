@@ -8,7 +8,7 @@
    - The game shuffles
    - On each rating dip,
      - The score per match reduces by a factor `f`
- - The game accumalates statistics such as 
+ - The game accumalates statistics such as
    - Highest scoring match
    - Rating
    - Number of moves
@@ -16,28 +16,29 @@
  - A statistics card is shown with the above accumalations at the end of the game
    - either by a win (match all cards)
    - or because of a timeout
-   - or because of exhausting a dynamically progressively calculated number of maximum moves 
  - The game has a maximum time to win of 12 minutes
    - The timer on the panel counts down
-   - The time taken on the stats panel counts up
+   - The time taken on the stats panel shows the actual time taken to either
+       - win
+       - timeout (12 minutes)
    - The time taken does **NOT** affect the rating
- 
+
  ## Install and Play
   ### Dependencies
     - npm
     - bower
     - apache/nginx
-    
-  - Clone this repo
-    - Run 
+
+  - Clone this repo and cd to the clone directory
+    - In case, you already **Do not have**  the directory `bower_components`, Only then, Run
         ```
            npm install -g bower
-           
+
            bower install
          ```
 >  **NOTE**
 > - [Bower][2], is a frontend package manager
->    - You can install Bower, by running 
+>    - You can install Bower, by running
         ```npm install bower```
 > - If you do not know what npm is, you can learn about node and npm [here][1]
 > - [Polymer][3], is a library by google, offereing syntactic eas to implement webcomponents
@@ -56,8 +57,9 @@
 
 
 - Navigate to the game folder via a webserver such as `nginx`/`apache`
+> Meaning, the nav bar on your browser, should not read **file:///** , but **localhost:/<path-to-clone-of-this-repo>**
 - Play
-  
+
   [1]:https://docs.npmjs.com/getting-started/what-is-npm
   [2]:https://bower.io/
   [3]:https://www.polymer-project.org/
