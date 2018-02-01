@@ -659,7 +659,8 @@ SuperHeroMindMap.prototype.rate = function () {
   //If max permissible number of moves have been exceeded, and the game is on an even move
   //then, check if the last shuffle was made a while back - at least 6 moves / 3 attempts ago
   //if so, shuffle away!
-  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && (deltaShuffle >= (maxMovesDelta / 2)) && deltaShuffle > 4);
+  //this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && (deltaShuffle >= (maxMovesDelta / 2)) && deltaShuffle > 4);
+  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && deltaShuffle > 4);
   //set the move the deck was last shuffled on, to this move
   this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
   //Only Dip the rating, on an even move
@@ -683,7 +684,7 @@ SuperHeroMindMap.prototype.rate = function () {
     //Let the deck shake for a while for visual effects
     //Then, NOTFIY
     setTimeout(alert, 110);
-    this.notificationMsg = "You have exhausted the number of moves to find a match.Please click Replay Game from the options panel below";
+    this.notificationMsg = "Oops! That's all the moves allowed! Please click Replay Game from the options panel below";
     this.notificationCategory = "error";
   }
   //define a menu of scoring parameters
