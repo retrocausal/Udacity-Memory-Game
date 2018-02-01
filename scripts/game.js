@@ -518,7 +518,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.moveOnLastMatch = 0;
   this.shuffleAtWhim = false;
   this.ratingNotified = false;
-  this.delayedFinishByRatingCounter = 0;
+  this.delayFinishCount = 8;
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
@@ -662,33 +662,33 @@ SuperHeroMindMap.prototype.rate = function () {
   //If max permissible number of moves have been exceeded, and the game is on an even move
   //then, check if the last shuffle was made a while back - at least 6 moves / 3 attempts ago
   //if so, shuffle away!
-  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && (deltaShuffle >= (maxMovesDelta / 2)) && deltaShuffle > 4);
+  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && deltaShuffle > 4);
   //set the move the deck was last shuffled on, to this move
   this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
   //Only Dip the rating, on an even move
-  //Also, check if the last shuffle is spaced at least 4 moves from a rting dip below 1
+  //If, the last shuffle is spaced at least 4 moves post the last rating dip
+  //And, If further rating dip, doesn't get the rating below 1
   if (deltaHigh && onEvenMove && deltaShuffle > 2 && this.ratingDip < 2) {
     const star = this.oRatingContainer.find("svg:first-child");
     star.remove();
     this.ratingDip++;
   }
-  //If out of a maximum of 5 deductable ratings,the user has moved to a point where
-  //All 5 of them have been deducted,
-  //Notify the user, that they need to restart the game
-  //Also deActivate the deck of cards
+  //If out of a maximum of 3 deductable ratings,the user has moved to a point where
+  //All 3, or 2 of them have been deducted,
+  //Notify the user, that they need to restart the game soon
   if (this.ratingDip >= 2 && this.ratingNotified === false) {
     const alert = () => {
-      this.oContainer.effect("shake", {
-        times: 5,
-        direction: "right"
-      }, "fast");
+      // this.oContainer.effect("shake", {
+      //   times: 5,
+      //   direction: "right"
+      // }, "fast");
       this.notify();
       return this.ratingNotified = true;
     };
-    //Let the deck shake for a while for visual effects
+    //blink, let the game finish its flips
     //Then, NOTFIY
     setTimeout(alert, 110);
-    this.notificationMsg = "You are now Playing on a single rating point";
+    this.notificationMsg = "You are now Playing on a single rating point.You have to find a match in the next 8 moves";
     this.notificationCategory = "error";
   }
   //define a menu of scoring parameters
@@ -747,10 +747,10 @@ SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
    ** Because, irrespective of the reviewer, the game needs to show unmatched cards as stats
    ** Which is not possible, without a forced end  - either by time, or by rating
    */
-  const delayedFinishIncrementBy = (this.ratingDip >= 2 && this.scoreMenu.deltaHigh && (this.moves % 2 == 0)) ? 1 : 0;
-  this.delayedFinishByRatingCounter += delayedFinishIncrementBy;
-  const boundsReached = (this.delayedFinishByRatingCounter > 8) ? true : false;
-  this.delayedFinishByRatingCounter = (boundsReached && true) ? 0 : this.delayedFinishByRatingCounter;
+  if (this.ratingDip >= 2 && (this.moves % 2 == 0)) {
+    this.delayFinishCount--;
+  }
+  const boundsReached = (this.delayFinishCount > 0) ? false : true;
   if (boundsReached) {
     this.notificationMsg = "Oops! Thats all the moves allowed. Please restart the game using the replay icon on the panel";
     this.notificationCategory = "error";
