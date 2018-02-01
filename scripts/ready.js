@@ -1,9 +1,10 @@
 window.addEventListener('WebComponentsReady', (W) => {
-  const superHeroMindMap = games.oSuperheroMindMap();
+  const superHeroMindMap = oGamebuilders.fSuperheroMindMapBuilder();
   const play = function () {
-    superHeroMindMap.build();
-    superHeroMindMap.layout(".deck");
-    return superHeroMindMap.activate();
+    superHeroMindMap.Game.oGame.build();
+    superHeroMindMap.Game.oGame.layout(".deck");
+    superHeroMindMap.Game.oGame.activate();
+    return superHeroMindMap.destroyBuilder();
   };
   const docLoaded = () => {
     let check;

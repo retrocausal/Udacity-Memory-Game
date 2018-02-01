@@ -1,4 +1,5 @@
-let games = {};
+let games = new WeakSet();
+let oGamebuilders = {};
 (() => {
   // create game
   const heroes = [
@@ -88,11 +89,25 @@ let games = {};
    }
  ];
   //closure 1
-  const oSuperheroMindMap = function () {
-    const oGame = new SuperHeroMindMap(heroes);
-    return oGame;
+  let fSuperheroMindMapBuilder = () => {
+    let oGame = new SuperHeroMindMap(heroes);
+    games.add(oGame);
+    const destroyBuilder = function () {
+      fSuperheroMindMapBuilder = null;
+      return oGamebuilders['fSuperheroMindMapBuilder'] = null;
+    };
+    const destroy = function () {
+      oGame = null;
+    };
+    return {
+      "Game": {
+        destroy,
+        oGame
+      },
+      destroyBuilder
+    };
   };
-  games = {
-    oSuperheroMindMap
-  };
+  return oGamebuilders = {
+    fSuperheroMindMapBuilder
+  }
 })();
