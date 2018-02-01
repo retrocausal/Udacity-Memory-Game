@@ -644,7 +644,8 @@ SuperHeroMindMap.prototype.rate = function () {
   //Whether this move recorded a Match - either 0(No!!) or 1(Yes!)
   const deltaMatches = matches - this.matches;
   //Maximum number of moves granted to log a match - Half of the number of Cards Unmatched discounting the currently to be matched card
-  const factor = (cardsAvailable > 4) ? 1 : 1;
+  const factor = 1; //Changed because, the Udacity reviewer refused to test a game where memory/concentration is tested
+  /*(cardsAvailable > 4) ? 1 : 1;*/
   let maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / factor));
   //Determine if this is an even move
   const onEvenMove = (this.moves % 2 == 0 && true);
@@ -740,8 +741,7 @@ SuperHeroMindMap.prototype.randomShuffle = function () {
 SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
   //return (this.ratingDip > 4);
   /*
-   **The not so udacious reviewer requires a fun game to be not so fun
-   ** The adament requirement / suggestion is to not limit the number of moves
+   **The not so udacious reviewer's suggestion is to not limit the number of moves
    ** Hence, block the end parameters by returning false
    */
   return false;
@@ -905,9 +905,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
   let oContainer;
   //Show the overall rating on which the game ended
   this.oScorecardRatingContainer.empty();
-  let rating = 3 - this.ratingDip;
-  if (rating < 1)
-    rating = 1;
+  let rating = ((3 - this.ratingDip) < 1) ? 1 : (3 - this.ratingDip);
   for (let i = 0; i < rating; i++) {
     star = $('<span class="fa fa-star star"></span>');
     this.oScorecardRatingContainer.append(star);
