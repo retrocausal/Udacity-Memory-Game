@@ -518,6 +518,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.moveOnLastMatch = 0;
   this.shuffleAtWhim = false;
   this.ratingNotified = false;
+  this.delayedFinishByRatingCounter = 0;
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
@@ -687,7 +688,7 @@ SuperHeroMindMap.prototype.rate = function () {
     //Let the deck shake for a while for visual effects
     //Then, NOTFIY
     setTimeout(alert, 110);
-    this.notificationMsg = "You have exhausted the number of moves to find a match while maintaining a rating .Playing on a single rating point";
+    this.notificationMsg = "You are now Playing on a single rating point";
     this.notificationCategory = "error";
   }
   //define a menu of scoring parameters
@@ -742,9 +743,19 @@ SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
   //return (this.ratingDip > 4);
   /*
    **The not so udacious reviewer's suggestion is to not limit the number of moves
-   ** Hence, block the end parameters by returning false
+   ** Hence, delay the end parameters
+   ** Because, irrespective of the reviewer, the game needs to show unmatched cards as stats
+   ** Which is not possible, without a forced end  - either by time, or by rating
    */
-  return false;
+  const delayedFinishIncrementBy = (this.ratingDip >= 2 && this.scoreMenu.deltaHigh && (this.moves % 2 == 0)) ? 1 : 0;
+  this.delayedFinishByRatingCounter += delayedFinishIncrementBy;
+  const boundsReached = (this.delayedFinishByRatingCounter > 8) ? true : false;
+  this.delayedFinishByRatingCounter = (boundsReached && true) ? 0 : this.delayedFinishByRatingCounter;
+  if (boundsReached) {
+    this.notificationMsg = "Oops! Thats all the moves allowed. Please restart the game using the replay icon on the panel";
+    this.notificationCategory = "error";
+  }
+  return boundsReached;
 };
 SuperHeroMindMap.prototype.score = function () {
   //Arbitrary max points per match
@@ -755,7 +766,7 @@ SuperHeroMindMap.prototype.score = function () {
   let scoreThisMatch = 0;
   //the rating the game is on at the moment
   //(maxrating of 5 minus the dip in rating)
-  const currentRating = 5 - this.ratingDip;
+  const currentRating = 3 - this.ratingDip;
   //the dip in rating
   //check if it is 0, and set it to be a minimum of 1, if it is
   const dip = (this.ratingDip > 0) ? this.ratingDip : 1;
