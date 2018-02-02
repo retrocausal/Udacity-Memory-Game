@@ -2,7 +2,7 @@ window.addEventListener('WebComponentsReady', (W) => {
   const superHeroMindMap = oGamebuilders.fSuperheroMindMapBuilder();
   const play = function () {
     superHeroMindMap.Game.oGame.build();
-    superHeroMindMap.Game.oGame.layout(".deck");
+    superHeroMindMap.Game.oGame.layout();
     superHeroMindMap.Game.oGame.activate();
     return superHeroMindMap.destroyBuilder();
   };
