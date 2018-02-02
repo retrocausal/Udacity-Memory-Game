@@ -158,23 +158,38 @@ Slot.prototype.getSlots = function () {
 Slot.prototype.shuffleSlots = function () {
   const ceil = this.slots.length || 1;
   const floor = 0;
-  let slotsTaken = [];
+  let slotsTaken = new Set();
   let newOrder = 0;
   for (let slot of this.slots) {
-    const order = slot.order;
-    //Keep generating random css order of card display on the lex deck
+    const orders = new Set();
+    const setDimension = slotsTaken.size;
+    const currentOrder = slot.order; //Keep generating random css order of card display on the flex deck
     //UNTIL the new randomly assigned css order , is not the same as the previously assigned order,
     //OR, the randomly assigned css order has not been already assigned to another card
     //in which CASE, two cards fight for a slot on the flex deck.
-    while (slotsTaken.indexOf(newOrder) >= 0 || newOrder == order) {
+    orders.add(currentOrder);
+    let orderSize = orders.size;
+    while (
+      // new orders generated in this loop, for slot `s` of slots, should not contain
+      // 1. the current order, or ,
+      // 2. be already contained in orders
+      orders.size < (orderSize + 1) ||
+      //Also, the newly generated order, should not be contained in the slot orders already placed
+      slotsTaken.has(newOrder)) {
+      //generate a new order
       newOrder = Math.floor(Math.random() * (ceil - floor + 1)) + floor;
+      orderSize = orders.size;
+      //try adding to orders
+      orders.add(newOrder);
     }
+    //push the currently generated new css order to a list, to track assigned order duplication
+    slotsTaken.add(newOrder);
     //assign new order
     slot.order = newOrder;
     //In case of a mid game shuffle, or, in case of a restart, reset the current content pointer always
     slot.currentContent = "rear";
-    //push the currently generated new css order to a list, to track assigned order duplication
-    slotsTaken.push(newOrder);
+    //clear this loop's orders
+    orders.clear();
   }
   return this.slots;
 };
@@ -220,7 +235,7 @@ SuperHeroMindMap.prototype.build = function () {
   }
   //shuffle the deck for display later via layout
   //copy over the slots generated via the Slot class, to a local "slots" property
-  this.shuffleDeck();
+  //this.shuffleDeck();
   this.shuffleDeck();
   return this.shuffleDeck();
 };
