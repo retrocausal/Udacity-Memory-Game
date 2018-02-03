@@ -5,7 +5,7 @@
    - The deck shuffles itself
    - The rating the player is on, takes a hit
  - There are a maximum of 3 star ratings, and on a rating dip below or equal to 1,
-   - The game shuffles
+   - The game shuffles, and informs the user of low scoring points hereafter
    - On each rating dip,
      - The score per match reduces by a factor `f`
  - The game accumalates statistics such as
@@ -16,12 +16,13 @@
  - A statistics card is shown with the above accumalations at the end of the game
    - either by a win (match all cards)
    - or because of a timeout
- - The game has a maximum time to win of 12 minutes
+ - The game has a maximum time to win of 6 minutes
    - The timer on the panel counts down
    - The time taken on the stats panel shows the actual time taken to either
        - win
-       - timeout (12 minutes)
+       - timeout (6 minutes)
    - The time taken does **NOT** affect the rating
+   - An example [STATS CARD][4] can be used, to familiarize oneself, with the `superhero names`, and their respective `alter egoes`. Just look under the column `Matches` as shown in the image for the mappings.
 
  ## Install and Play
   ### Dependencies
@@ -63,3 +64,4 @@
   [1]:https://docs.npmjs.com/getting-started/what-is-npm
   [2]:https://bower.io/
   [3]:https://www.polymer-project.org/
+  [4]:https://github.com/retrocausal/udacity-memory-game/blob/master/stats.png
