@@ -175,7 +175,8 @@ Slot.prototype.shuffleSlots = function () {
       // 2. be already contained in orders
       orders.size < (orderSize + 1) ||
       //Also, the newly generated order, should not be contained in the slot orders already placed
-      slotsTaken.has(newOrder)) {
+      slotsTaken.has(newOrder)
+    ) {
       //generate a new order
       newOrder = Math.floor(Math.random() * (ceil - floor + 1)) + floor;
       orderSize = orders.size;
@@ -205,7 +206,7 @@ Slot.prototype.shuffleSlots = function () {
 const SuperHeroMindMap = function (...config) {
   const [heroes] = config;
   this.heroes = heroes;
-  this.superHeroes = {};
+  this.superHeroes = new Map();
   this.slot = new Slot();
   this.slots = {};
 };
@@ -231,11 +232,10 @@ SuperHeroMindMap.prototype.build = function () {
     this.slot.push(card, hash);
     this.slot.push(match, hash);
     //Track all superheroes created, may be of use
-    this.superHeroes[hash] = superhero;
+    this.superHeroes.set(hash, superhero);
   }
   //shuffle the deck for display later via layout
   //copy over the slots generated via the Slot class, to a local "slots" property
-  //this.shuffleDeck();
   this.shuffleDeck();
   return this.shuffleDeck();
 };
@@ -475,10 +475,11 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     this.updateMoveCountOnPanels();
     //on each click, rate the user based on moves, matches
     this.rate();
+    const shouldShuffle = this.isItTimetoShuffle();
     const gameWon = this.gameWon();
     const ratingTooLow = this.ratingDipBoundsReached();
     const finishCondition = (gameWon || ratingTooLow);
-    const shuffleNow = (this.shuffleAtWhim && !finishCondition) ? this.randomShuffle() : false;
+    const shuffleNow = (shouldShuffle && !finishCondition) ? this.randomShuffle() : false;
     return (finishCondition && true) ? this.finish() : false;
   }
   return false;
@@ -528,12 +529,12 @@ SuperHeroMindMap.prototype.reset = function () {
   this.matchedSlotHashes = [];
   //reset rate params
   this.moves = 0;
-  this.matches = 0;
+  this.numberOfMatches = 0;
   this.ratingDip = 0;
   this.moveOnLastMatch = 0;
+  this.moveOnLastDip = 0;
   this.shuffleAtWhim = false;
   this.ratingNotified = false;
-  this.delayFinishCount = 8;
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
@@ -642,7 +643,7 @@ SuperHeroMindMap.prototype.flip = function (card, slot) {
 };
 SuperHeroMindMap.prototype.rate = function () {
   const moves = this.moves;
-  const matches = this.slotsMatched.length / 2;
+  const numberOfMatches = this.slotsMatched.length / 2;
   const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
   const matchesRemaining = cardsAvailable / 2;
 
@@ -658,61 +659,92 @@ SuperHeroMindMap.prototype.rate = function () {
   //Number of moves since the last successful match
   const deltaMoves = moves - this.moveOnLastMatch;
   //Whether this move recorded a Match - either 0(No!!) or 1(Yes!)
-  const deltaMatches = matches - this.matches;
+  const deltaMatches = numberOfMatches - this.numberOfMatches;
+  //Reset matches till now
+  //Set it to the current number of matches, So, in the event of a next match, the delta is always 1
+  //else always 0
+  this.numberOfMatches = numberOfMatches;
   //Maximum number of moves granted to log a match - Half of the number of Cards Unmatched discounting the currently to be matched card
-  const factor = 1; //Changed because, the Udacity reviewer refused to test a game where memory/concentration is tested
-  /*(cardsAvailable > 4) ? 1 : 1;*/
+  const factor = (cardsAvailable >= this.slot.slots.length / 2) ? 2 : 1;
   let maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / factor));
   //Determine if this is an even move
   const onEvenMove = (this.moves % 2 == 0 && true);
   //Determine if, The rating should dip
   const deltaHigh = ((deltaMatches == 0) && (deltaMoves >= maxMovesDelta));
-  //Reset matches till now
-  //Set it to the current number of matches, So, in the event of a next match, the delta is always 1
-  //else always 0
-  this.matches = matches;
-  //How many moves have been registered on the counter since the last shuffle?
-  const deltaShuffle = this.moves - this.shuffledOnMove;
-  //Should we shuffle whimsically?
-  //If max permissible number of moves have been exceeded, and the game is on an even move
-  //then, check if the last shuffle was made a while back - at least 6 moves / 3 attempts ago
-  //if so, shuffle away!
-  this.shuffleAtWhim = (deltaHigh && (cardsAvailable >= 6) && onEvenMove && deltaShuffle > 4);
-  //set the move the deck was last shuffled on, to this move
-  this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
-  //Only Dip the rating, on an even move
-  //If, the last shuffle is spaced at least 4 moves post the last rating dip
-  //And, If further rating dip, doesn't get the rating below 1
-  if (deltaHigh && onEvenMove && deltaShuffle > 2 && this.ratingDip < 2) {
-    const star = this.oRatingContainer.find("svg:first-child");
-    star.remove();
+  const deltaRateDip = this.moves - this.moveOnLastDip;
+  const shouldDipNow = (this.ratingDip < 1) ? true : (deltaRateDip >= (maxMovesDelta / factor));
+  //Dip the rating if shouldDipNow and onEvenMove and deltaHigh
+  if (deltaHigh && onEvenMove && shouldDipNow) {
     this.ratingDip++;
-  }
-  //If out of a maximum of 3 deductable ratings,the user has moved to a point where
+    this.moveOnLastDip = this.moves;
+    if (this.ratingDip < 3) {
+      const star = this.oRatingContainer.find("svg:first-child");
+      star.remove();
+    }
+  } //If out of a maximum of 3 deductable ratings,the user has moved to a point where
   //All 3, or 2 of them have been deducted,
   //Notify the user, that they need to restart the game soon
   if (this.ratingDip >= 2 && this.ratingNotified === false) {
     const alert = () => {
-      // this.oContainer.effect("shake", {
-      //   times: 5,
-      //   direction: "right"
-      // }, "fast");
+      this.notificationMsg = "You are now Playing on a single rating point";
+      this.notificationCategory = "info";
       this.notify();
       return this.ratingNotified = true;
     };
     //blink, let the game finish its flips
     //Then, NOTFIY
     setTimeout(alert, 110);
-    this.notificationMsg = "You are now Playing on a single rating point.You have to find a match in the next 8 moves";
-    this.notificationCategory = "error";
   }
   //define a menu of scoring parameters
-  const scoreMenu = {
+  const rateCard = {
     deltaHigh,
     deltaMoves,
-    maxMovesDelta
+    maxMovesDelta,
+    cardsAvailable
   };
-  return this.scoreMenu = scoreMenu;
+  return this.rateCard = rateCard;
+};
+
+SuperHeroMindMap.prototype.isItTimetoShuffle = function () {
+  //How many moves have been registered on the counter since the last shuffle?
+  const deltaShuffle = this.moves - this.shuffledOnMove;
+  const numberOfMatches = (this.numberOfMatches < 1) ? 1 : this.numberOfMatches;
+  let moveToMatchesRatio;
+  let shuffleCriteriaMet;
+  let shuffleAfter;
+  const onEvenMove = (this.moves % 2 == 0);
+  const {
+    deltaHigh,
+    deltaMoves,
+    maxMovesDelta,
+    cardsAvailable
+  } = this.rateCard;
+  //Should we shuffle whimsically?
+  //Determine parameters to shuffle at whim. if they say so, shuffle away!
+  switch (deltaHigh) {
+    //when cumulative delta is high
+  case true:
+    //number of actual moves : number of acceptable moves
+    moveToMatchesRatio = deltaMoves / maxMovesDelta;
+    //Is thee above ratio greater than an acceptable shuffle limit?
+    shuffleCriteriaMet = (moveToMatchesRatio >= 1.2);
+    //minimum space between shuffles
+    shuffleAfter = 6;
+    break;
+  default:
+    //total number of moves : total number of matches till now
+    moveToMatchesRatio = this.moves / numberOfMatches;
+    //either the user would be finding mathes easily, or would be finding it tough
+    //either way, shuffle
+    shuffleCriteriaMet = ((moveToMatchesRatio <= 1.5 || moveToMatchesRatio > maxMovesDelta / 2));
+    //but, space the shuffle 4 moves apart if level of user playing at, is high, else, 8 moves apart
+    shuffleAfter = (moveToMatchesRatio <= 1.5) ? 4 : 8;
+  }
+  const noMatchOnThisMove = (this.moveOnLastMatch != this.moves);
+  this.shuffleAtWhim = (cardsAvailable >= 4 && onEvenMove && shuffleCriteriaMet && noMatchOnThisMove && deltaShuffle >= shuffleAfter);
+  //set the move the deck was last shuffled on, to this move
+  this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
+  return this.shuffleAtWhim;
 };
 SuperHeroMindMap.prototype.randomShuffle = function () {
   //delay a blink for visual registers
@@ -755,22 +787,13 @@ SuperHeroMindMap.prototype.randomShuffle = function () {
   this.notificationMsg = "Shuffling Deck";
 };
 SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
-  //return (this.ratingDip > 4);
-  /*
-   **The not so udacious reviewer's suggestion is to not limit the number of moves
-   ** Hence, delay the end parameters
-   ** Because, irrespective of the reviewer, the game needs to show unmatched cards as stats
-   ** Which is not possible, without a forced end  - either by time, or by rating
-   */
-  if (this.ratingDip >= 2 && (this.moves % 2 == 0)) {
-    this.delayFinishCount--;
-  }
-  const boundsReached = (this.delayFinishCount > 0) ? false : true;
-  if (boundsReached) {
-    this.notificationMsg = "Oops! Thats all the moves allowed. Please restart the game using the replay icon on the panel";
+  /*if (this.ratingDip > 2) {
+    this.notificationMsg = "Oops!!! That is all the number of moves allowed. Please hit replay to play again."
     this.notificationCategory = "error";
   }
-  return boundsReached;
+  return (this.ratingDip > 2);*/
+  //disable end of play due to rating dip
+  return false;
 };
 SuperHeroMindMap.prototype.score = function () {
   //Arbitrary max points per match
@@ -785,9 +808,9 @@ SuperHeroMindMap.prototype.score = function () {
   //the dip in rating
   //check if it is 0, and set it to be a minimum of 1, if it is
   const dip = (this.ratingDip > 0) ? this.ratingDip : 1;
-  if (this.scoreMenu.deltaHigh) {
+  if (this.rateCard.deltaHigh) {
     //delta becomes the number of moves over and above the max permissible moves
-    delta = this.scoreMenu.deltaMoves - this.scoreMenu.maxMovesDelta;
+    delta = this.rateCard.deltaMoves - this.rateCard.maxMovesDelta;
     //points scored, are a deduction of the delta above from the max arbitray points to be awarded per match
     pointsThisMatch = maxPointsPerMatch - delta;
     //rating needs to be a factor
@@ -795,7 +818,7 @@ SuperHeroMindMap.prototype.score = function () {
     scoreThisMatch = currentRating * (pointsThisMatch / dip);
   } else {
     //delta becomes the number of moves left to exceed the max permissible moves
-    delta = this.scoreMenu.maxMovesDelta - this.scoreMenu.deltaMoves;
+    delta = this.rateCard.maxMovesDelta - this.rateCard.deltaMoves;
     //No deductions here!
     pointsThisMatch = maxPointsPerMatch;
     //factor in the rating
@@ -826,7 +849,7 @@ SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
 SuperHeroMindMap.prototype.getSuperhero = function (id) {
   const slot = this.slots[id];
   const hash = slot.hash;
-  const oSuperhero = this.superHeroes[hash];
+  const oSuperhero = this.superHeroes.get(hash);
   return oSuperhero;
 };
 SuperHeroMindMap.prototype.notify = function () {
@@ -938,8 +961,17 @@ SuperHeroMindMap.prototype.showStatistics = function () {
   }
   //Create lists of all matched superHeroes
   //Also, a list of all unmatched superHeroes
-  const superheroKeys = Object.keys(this.superHeroes);
-  const matchedSuperheroes = superheroKeys.reduce((accumalatedMatchedSuperheroes, currentKey) => {
+  const superheroKeys = this.superHeroes.keys();
+  let matchedSuperheroes = [],
+    unmatchedSuperheroes = [];
+  for (const key of superheroKeys) {
+    if (this.matchedSlotHashes.indexOf(key) >= 0) {
+      matchedSuperheroes.push(this.superHeroes.get(key));
+    } else {
+      unmatchedSuperheroes.push(this.superHeroes.get(key));
+    }
+  }
+  /*const matchedSuperheroes = superheroKeys.reduce((accumalatedMatchedSuperheroes, currentKey) => {
     if (this.matchedSlotHashes.indexOf(currentKey) >= 0) {
       accumalatedMatchedSuperheroes.push(this.superHeroes[currentKey]);
     }
@@ -952,6 +984,7 @@ SuperHeroMindMap.prototype.showStatistics = function () {
 
     return accumalatedUnMatchedSuperheroes;
   }, []);
+  */
   //Append the list of all matched superheroes to the mathes container on the stats panel
   for (const superhero of matchedSuperheroes) {
     oContainer = $('<h3 class="cards-found"></h3>');
