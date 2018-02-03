@@ -22,7 +22,9 @@
        - win
        - timeout (6 minutes)
    - The time taken does **NOT** affect the rating
-   - An example [STATS CARD][4] can be used, to familiarize oneself, with the `superhero names`, and their respective `alter egoes`. Just look under the column `Matches` as shown in the image for the mappings.
+
+
+> An example [STATS CARD][4] can be used, to familiarize oneself, with the `superhero names`, and their respective `alter egoes`. Just look under the column `Matches` as shown in the image for the mappings.
 
  ## Install and Play
   ### Dependencies
