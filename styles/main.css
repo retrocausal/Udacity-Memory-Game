@@ -150,6 +150,7 @@ img {
   font-size: 1.2rem;
   font-family: "Montserrat",sans-serif;
   line-height: 1.5;
+  text-align: center;
 }
 
 .subitem-list-item {
@@ -303,22 +304,46 @@ img {
   top: 25%;
 }
 
-A,
-A:hover,
-A:visited {
+.credit-section-anchor,
+.credit-section-anchor:hover,
+.credit-section-anchor:visited,
+.reload,
+.reload:hover,
+.reload:visited,
+.stats-pic-anchor,
+.stats-pic-anchor:hover,
+.stats-pic-anchor:visited {
   display: block;
   width: 100%;
   cursor: pointer;
   text-decoration: none;
 }
 
-A,
-A:visited {
+.credit-section-anchor,
+.credit-section-anchor:visited,
+.reload,
+.reload:visited {
   color: #000;
 }
 
-A:hover {
+.credit-section-anchor:hover,
+.reload:hover {
   color: whitesmoke;
+}
+
+.stats-pic-anchor,
+.stats-pic-anchor:visited {
+  color: white;
+  font-size: larger;
+  display: inline;
+  width: auto;
+}
+
+.stats-pic-anchor:hover {
+  color: #000;
+  font-size: larger;
+  display: inline;
+  width: auto;
 }
 
 flip-card,
