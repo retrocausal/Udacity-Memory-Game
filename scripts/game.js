@@ -192,6 +192,7 @@ Slot.prototype.shuffleSlots = function () {
     //clear this loop's orders
     orders.clear();
   }
+  slotsTaken.clear();
   return this.slots;
 };
 
@@ -208,7 +209,7 @@ const SuperHeroMindMap = function (...config) {
   this.heroes = heroes;
   this.superHeroes = new Map();
   this.slot = new Slot();
-  this.slots = {};
+  this.slots = new Map();
 };
 //define the Game prototype
 SuperHeroMindMap.prototype.build = function () {
@@ -347,7 +348,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
   const id = eCard.delegateTarget.id;
   const card = $("#" + id);
   //Determine and copy the currently pressed slot containing the card containing the Polymer
-  const slot = this.slots[id];
+  const slot = this.slots.get(id);
   //Copy the hash on slot, for matching purposes
   const hash = slot.hash;
   //Define a mismatch handler
@@ -355,7 +356,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     //Previously flipped card, determined by the pointer to the slot referenced by an odd move
     // and also, its slot
     const prevCard = $("#" + this.currentMatchableId);
-    const prevSlot = this.slots[this.currentMatchableId];
+    const prevSlot = this.slots.get(this.currentMatchableId);
     //Shake them
     //Flip them
     prevCard.find(".placeholder")
@@ -386,7 +387,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
       .remove();
     //identify the to be matched cards
     const prevCard = $("#" + this.currentMatchableId);
-    const prevSlot = this.slots[this.currentMatchableId];
+    const prevSlot = this.slots.get(this.currentMatchableId);
     //puff the two matching cards
     card.find(".placeholder")
       .effect("puff")
@@ -424,7 +425,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     return (s >= this.maxScoreOnMatch);
   };
   //if card already matched, or, if the same card clicked, set exit condition to do nothing
-  const exitCondition = (this.slotsMatched.indexOf(id) >= 0 || id == this.currentMatchableId);
+  const exitCondition = (this.slotsMatched.has(id) || id == this.currentMatchableId);
   //if the card is not matched with a pair, or, if a different card clicked, continue to inspect a possible match
   if (!exitCondition) {
     //flip the card, count one move
@@ -442,9 +443,9 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         //Its a Match!
         //Push the two currently matched slots with their respective cards, into a tracker list of
         //matched slots and cards
-        this.slotsMatched.push(this.currentMatchableId);
-        this.slotsMatched.push(id);
-        this.matchedSlotHashes.push(hash);
+        this.slotsMatched.add(this.currentMatchableId);
+        this.slotsMatched.add(id);
+        this.matchedSlotHashes.add(hash);
         //Set a Rating parameter to determine how many moves were made since the last match
         this.moveOnLastMatch = this.moves;
         //Grade or aggregate points per match
@@ -476,7 +477,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     //on each click, rate the user based on moves, matches
     this.rate();
     const shouldShuffle = this.isItTimetoShuffle();
-    const gameWon = this.gameWon();
+    const gameWon = this.isTheGameWon();
     const ratingTooLow = this.ratingDipBoundsReached();
     const finishCondition = (gameWon || ratingTooLow);
     const shuffleNow = (shouldShuffle && !finishCondition) ? this.randomShuffle() : false;
@@ -489,7 +490,7 @@ SuperHeroMindMap.prototype.startTickerTimers = function () {
   const time_now = Date.now();
   //time last animation frame
   this.time_before = (this.time_before === false) ? time_now : this.time_before;
-  //diff in time between two frames ~ 1 milliseconds
+  //diff in time between two frames ~ 21 milliseconds
   const diff_in_time = time_now - this.time_before;
   //set time last animation frame to time now this animation frame
   //on the next frame, it is handy to find the diff
@@ -506,7 +507,7 @@ SuperHeroMindMap.prototype.startTickerTimers = function () {
     return this.startTickerTimers();
   });
   return (timeOver && true) ?
-    //if 3 minutes are up, stop the game
+    //if time is up, stop the game
     //show stats
     this.finish() :
     //count down/up timers
@@ -524,9 +525,9 @@ SuperHeroMindMap.prototype.reset = function () {
   // reset match check params
   this.currentMatchableHash = "";
   this.currentMatchableId = "";
-  this.slotsMatched = [];
+  this.slotsMatched = new Set();
   this.matchesComplete = false;
-  this.matchedSlotHashes = [];
+  this.matchedSlotHashes = new Set();
   //reset rate params
   this.moves = 0;
   this.numberOfMatches = 0;
@@ -551,7 +552,7 @@ SuperHeroMindMap.prototype.reset = function () {
   this.time = 0;
   this.gameBegun = false;
   this.time_before = false;
-  this.panelTime = 720021;
+  this.panelTime = 360999;
   this.timeOver = false;
   //reset the move the deck was shuffled on
   this.shuffledOnMove = 0;
@@ -602,12 +603,10 @@ SuperHeroMindMap.prototype.shuffleDeck = function () {
   //Shuffle the Deck
   //Grab all slots and their respective cards
   const slots = this.slot.shuffleSlots();
-  //Initialize / re Initialize a local property to track slots in play
-  this.slots = {};
   //loop over available shuffled slots
   //Store them all in the tracker for this play/hand
   for (const slot of slots) {
-    this.slots[slot.id] = slot;
+    this.slots.set(slot.id, slot);
   }
   return this.slots;
 };
@@ -643,8 +642,8 @@ SuperHeroMindMap.prototype.flip = function (card, slot) {
 };
 SuperHeroMindMap.prototype.rate = function () {
   const moves = this.moves;
-  const numberOfMatches = this.slotsMatched.length / 2;
-  const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
+  const numberOfMatches = this.slotsMatched.size / 2;
+  const cardsAvailable = this.slots.size - this.slotsMatched.size;
   const matchesRemaining = cardsAvailable / 2;
 
   /*
@@ -665,14 +664,14 @@ SuperHeroMindMap.prototype.rate = function () {
   //else always 0
   this.numberOfMatches = numberOfMatches;
   //Maximum number of moves granted to log a match - Half of the number of Cards Unmatched discounting the currently to be matched card
-  const factor = (cardsAvailable >= this.slot.slots.length / 2) ? 2 : 1;
+  const factor = (cardsAvailable >= this.slots.size / 2) ? 1.5 : 1.25;
   let maxMovesDelta = Math.floor(Math.round((cardsAvailable - 1) / factor));
   //Determine if this is an even move
   const onEvenMove = (this.moves % 2 == 0 && true);
   //Determine if, The rating should dip
   const deltaHigh = ((deltaMatches == 0) && (deltaMoves >= maxMovesDelta));
   const deltaRateDip = this.moves - this.moveOnLastDip;
-  const shouldDipNow = (this.ratingDip < 1) ? true : (deltaRateDip >= (maxMovesDelta / factor));
+  const shouldDipNow = (deltaRateDip >= (maxMovesDelta / factor));
   //Dip the rating if shouldDipNow and onEvenMove and deltaHigh
   if (deltaHigh && onEvenMove && shouldDipNow) {
     this.ratingDip++;
@@ -736,9 +735,9 @@ SuperHeroMindMap.prototype.isItTimetoShuffle = function () {
     moveToMatchesRatio = this.moves / numberOfMatches;
     //either the user would be finding mathes easily, or would be finding it tough
     //either way, shuffle
-    shuffleCriteriaMet = ((moveToMatchesRatio <= 1.5 || moveToMatchesRatio > maxMovesDelta / 2));
+    shuffleCriteriaMet = ((moveToMatchesRatio < 5 || moveToMatchesRatio > maxMovesDelta));
     //but, space the shuffle 4 moves apart if level of user playing at, is high, else, 8 moves apart
-    shuffleAfter = (moveToMatchesRatio <= 1.5) ? 4 : 8;
+    shuffleAfter = (moveToMatchesRatio < 5) ? 6 : 12;
   }
   const noMatchOnThisMove = (this.moveOnLastMatch != this.moves);
   this.shuffleAtWhim = (cardsAvailable >= 4 && onEvenMove && shuffleCriteriaMet && noMatchOnThisMove && deltaShuffle >= shuffleAfter);
@@ -751,7 +750,6 @@ SuperHeroMindMap.prototype.randomShuffle = function () {
   setTimeout(() => {
     //Extract all slotted cards into cards
     const cards = this.oContainer.find("article.card");
-    const slots = this.slots;
     //notify the user, that the deck is being shuffled
     this.notify();
     //Delay this till the flipped cards have been flipped back, and then some more
@@ -768,7 +766,7 @@ SuperHeroMindMap.prototype.randomShuffle = function () {
       cards.each((cardIndex, card) => {
         const id = $(card)
           .attr("id");
-        const slot = this.slots[id];
+        const slot = this.slots.get(id);
         const order = slot.order;
         $(card)
           .css({
@@ -827,6 +825,7 @@ SuperHeroMindMap.prototype.score = function () {
     scoreThisMatch = (currentRating * pointsThisMatch) + delta;
   }
   scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
+  scoreThisMatch = (scoreThisMatch > 0) ? scoreThisMatch : 1;
   //add score on this match to the game score
   this.userScore += scoreThisMatch;
   return scoreThisMatch;
@@ -835,7 +834,7 @@ SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
   //gather the high scoring slot, and its matching slots
   //For a later possible feature of displaying cards on the stats panel
   const [id, match, score] = highs;
-  const matchedSlot = this.slot[match];
+  const matchedSlot = this.slots.get(match);
   //for now, identify the superhero card that was matched
   //get the name and matched alter ego
   const oSuperhero = this.getSuperhero(id);
@@ -847,7 +846,7 @@ SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
     .append(highScoreText);
 };
 SuperHeroMindMap.prototype.getSuperhero = function (id) {
-  const slot = this.slots[id];
+  const slot = this.slots.get(id);
   const hash = slot.hash;
   const oSuperhero = this.superHeroes.get(hash);
   return oSuperhero;
@@ -874,7 +873,7 @@ SuperHeroMindMap.prototype.notify = function () {
 };
 SuperHeroMindMap.prototype.updateFinishParams = function () {
   //number of cards still unmatched
-  const cardsAvailable = this.slot.slots.length - this.slotsMatched.length;
+  const cardsAvailable = this.slots.size - this.slotsMatched.size;
   //Is the game over? are all superheroes matched to their respective alter egoes?
   const matchesComplete = (cardsAvailable === 0) && true;
   this.matchesComplete = matchesComplete;
@@ -882,14 +881,14 @@ SuperHeroMindMap.prototype.updateFinishParams = function () {
   //set the notification criteria
   if (this.matchesComplete) {
     this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
-    You can now view some statistics, or, just hit replay`;
+    You can now view some cool statistics, or, meh! just hit replay`;
     this.notificationCategory = "cmesg";
     $(".scorecard-timer-header")
       .empty()
       .html("Game Won In");
   }
 };
-SuperHeroMindMap.prototype.gameWon = function () {
+SuperHeroMindMap.prototype.isTheGameWon = function () {
   return (this.matchesComplete && true);
 };
 SuperHeroMindMap.prototype.finish = function () {
@@ -938,12 +937,16 @@ SuperHeroMindMap.prototype.updateScoreOnPanels = function () {
     .effect("bounce");
 };
 SuperHeroMindMap.prototype.tickTthemTimers = function () {
-  const readableStatsTime = new Date(this.time)
+  // Using the Date constructor,convert time counting in milliseconds, to datetime post epoch(January 1, 1970, 00:00:00.000)
+  // new Date(10) => 10 ms since epoch
+  // extract time from the resulting datetime string
+  let readableStatsTime = new Date(this.time)
     .toISOString()
     .slice(11, -5);
-  const readablePanelTime = new Date(this.panelTime)
+  let readablePanelTime = new Date(this.panelTime)
     .toISOString()
     .slice(11, -5);
+  //update time counts
   this.oClockContainer.empty()
     .html(`<h2>${readablePanelTime}</h2>`);
   this.oScorecardClockContainer.empty()
@@ -962,47 +965,32 @@ SuperHeroMindMap.prototype.showStatistics = function () {
   //Create lists of all matched superHeroes
   //Also, a list of all unmatched superHeroes
   const superheroKeys = this.superHeroes.keys();
-  let matchedSuperheroes = [],
-    unmatchedSuperheroes = [];
+  let matchedSuperheroes = new Set(),
+    unmatchedSuperheroes = new Set();
   for (const key of superheroKeys) {
-    if (this.matchedSlotHashes.indexOf(key) >= 0) {
-      matchedSuperheroes.push(this.superHeroes.get(key));
-    } else {
-      unmatchedSuperheroes.push(this.superHeroes.get(key));
-    }
+    const classify = (this.matchedSlotHashes.has(key)) ?
+      matchedSuperheroes.add(this.superHeroes.get(key)) : unmatchedSuperheroes.add(this.superHeroes.get(key));
   }
-  /*const matchedSuperheroes = superheroKeys.reduce((accumalatedMatchedSuperheroes, currentKey) => {
-    if (this.matchedSlotHashes.indexOf(currentKey) >= 0) {
-      accumalatedMatchedSuperheroes.push(this.superHeroes[currentKey]);
-    }
-    return accumalatedMatchedSuperheroes;
-  }, []);
-  const unmatchedSuperheroes = superheroKeys.reduce((accumalatedUnMatchedSuperheroes, currentKey) => {
-    if (this.matchedSlotHashes.indexOf(currentKey) < 0) {
-      accumalatedUnMatchedSuperheroes.push(this.superHeroes[currentKey]);
-    }
-
-    return accumalatedUnMatchedSuperheroes;
-  }, []);
-  */
   //Append the list of all matched superheroes to the mathes container on the stats panel
   for (const superhero of matchedSuperheroes) {
     oContainer = $('<h3 class="cards-found"></h3>');
     oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
     this.oStatsMatchesContainer.append(oContainer);
   }
+  matchedSuperheroes.clear();
   //Also, append the list of all unamtched superheroes to the mismatched container on the statistics panel
   for (const superhero of unmatchedSuperheroes) {
     oContainer = $('<h3 class="cards-not-found"></h3>');
     oContainer.html(`${superhero.name} / ${superhero.alterEgo}`);
     this.oStatsMismatchesContainer.append(oContainer);
   }
+  unmatchedSuperheroes.clear();
   //Important! Show the stats after the player finishes
   this.oStatisticsContainer.fadeIn(1505);
 };
 SuperHeroMindMap.prototype.emptyDeck = function () {
   //Create a visually engaging spinning wheel
-  const shuffle = $('<div class="shuffle" id="spinner-cog"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
+  const cog = $('<div class="shuffle" id="spinner-cog"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   this.deActivate();
   //Empty the Deck
   //Append spinner
@@ -1018,7 +1006,7 @@ SuperHeroMindMap.prototype.emptyDeck = function () {
     this.oContainer.css({
         "min-height": this.oCanvas.height
       })
-      .append(shuffle);
+      .append(cog);
     return $("#spinner-cog")
       .focus();
   }, 1005);
@@ -1028,22 +1016,20 @@ SuperHeroMindMap.prototype.restart = function () {
   //Relayout the game
   const relayoutDeck = () => {
     //reset the container for the deck
-    this.oContainer.empty()
+    this.oContainer.empty();
+    //Shuffle the deck
+    this.shuffleDeck();
     //The shuffle takes time. give it some time
     setTimeout(() => {
-      return this.oContainer.css({
+      this.oContainer.css({
         "min-height": 0
       });
-    }, 200);
-    //Shuffle thrice
-    this.shuffleDeck();
-    this.shuffleDeck();
-    this.shuffleDeck();
-    //Repopulate the deck
-    this.addCards();
-    //Activate the click handlers for each card
-    this.activate();
+      //Repopulate the deck
+      this.addCards();
+      //Activate the click handlers for each card
+      return this.activate();
+    }, 999);
   };
   //Let the user see a spinning wheel for a while
-  setTimeout(relayoutDeck, 3000);
+  setTimeout(relayoutDeck, 2100);
 };
