@@ -1,5 +1,5 @@
 let games = new WeakSet();
-let oGamebuilders = {};
+let oGamebuilders = new Map();
 (() => {
   // create game
   const heroes = [
@@ -89,25 +89,17 @@ let oGamebuilders = {};
    }
  ];
   //closure 1
-  let fSuperheroMindMapBuilder = () => {
-    let oGame = new SuperHeroMindMap(heroes);
-    games.add(oGame);
-    const destroyBuilder = function () {
-      fSuperheroMindMapBuilder = null;
-      return oGamebuilders['fSuperheroMindMapBuilder'] = null;
-    };
-    const destroy = function () {
-      oGame = null;
-    };
-    return {
-      "play": {
-        destroy,
-        oGame
-      },
-      destroyBuilder
-    };
+  const SuperheroMindMapBuilder = function () {
+    this.oGame = new SuperHeroMindMap(heroes);
+    // Add the game object to a WeakSet
+    games.add(this.oGame);
   };
-  return oGamebuilders = {
-    fSuperheroMindMapBuilder
-  }
+  SuperheroMindMapBuilder.prototype.play = function () {
+    this.oGame.resetGameVariables()
+      .build()
+      .layout()
+      .activate();
+    return this;
+  };
+  return oGamebuilders.set('SuperheroMindMapBuilder', SuperheroMindMapBuilder);
 })();
