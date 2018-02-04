@@ -1,4 +1,4 @@
-let games = new WeakSet();
+let games = new WeakMap();
 let oGamebuilders = new Map();
 (() => {
   // create game
@@ -91,8 +91,9 @@ let oGamebuilders = new Map();
   //closure 1
   const SuperheroMindMapBuilder = function () {
     this.oGame = new SuperHeroMindMap(heroes);
-    // Add the game object to a WeakSet
-    games.add(this.oGame);
+    // Add the game object to a WeakMap
+    //NOTE: Can be of use later, to maintain state info such as levels etc
+    games.set(this.oGame, true);
   };
   SuperheroMindMapBuilder.prototype.play = function () {
     this.oGame.resetGameVariables()
