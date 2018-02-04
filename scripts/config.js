@@ -100,7 +100,7 @@ let oGamebuilders = {};
       oGame = null;
     };
     return {
-      "Game": {
+      "play": {
         destroy,
         oGame
       },

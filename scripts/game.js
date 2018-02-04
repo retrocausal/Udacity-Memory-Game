@@ -235,19 +235,11 @@ SuperHeroMindMap.prototype.build = function () {
     //Track all superheroes created, may be of use
     this.superHeroes.set(hash, superhero);
   }
-  //shuffle the deck for display later via layout
-  //copy over the slots generated via the Slot class, to a local "slots" property
-  this.shuffleDeck();
-  return this.shuffleDeck();
+  return this;
 };
 SuperHeroMindMap.prototype.layout = function () {
   //Initialize the container
   const oContainer = $(".deck");
-  //Assign a restart game button
-  const reload = $(".reload");
-  reload.click(() => {
-    return this.restart();
-  });
   //copy the container over locally
   this.oContainer = oContainer;
   //Initialize the notification box
@@ -265,14 +257,113 @@ SuperHeroMindMap.prototype.layout = function () {
   this.oStatsMatchesContainer = $(".matches");
   this.oStatsMismatchesContainer = $(".mismatches");
   this.oStatisticsContainer = $(".statistics");
+  //Assign a restart game button
+  this.reloadIcon = $(".reload");
+  this.reloadIcon.click(() => {
+    return this.restart();
+  });
   //empty the Deck
   this.oContainer.empty();
+  //reset panels
+  this.resetPanel();
+  this.resetStatistics();
   //Iteratively Add Slots with self contained cards to the flex deck
-  return this.addCards();
+  this.populateDeck();
+  return this;
 };
-SuperHeroMindMap.prototype.addCards = function () {
+SuperHeroMindMap.prototype.deActivate = function () {
+  //copy locally, the local container property as a constant
+  const oContainer = this.oContainer;
+  //Extract all cards within the container deck, into a cards constant
+  const cards = oContainer.find("article.card");
+  //Deactivate click handlers, even on children, safe side
+  cards.off("click");
+  cards.children()
+    .off("click");
+  return this;
+};
+SuperHeroMindMap.prototype.activate = function () {
+  //Copy locally, the local container property
+  const oContainer = this.oContainer;
+  //Extract all slotted cards into cards
+  const cards = oContainer.find("article.card");
+  //copy over the locally available / defined click handler,
+  //reset
+  //define a click handler
+  const clickedCallBack = (e) => {
+    return setTimeout(() => {
+      return this.clickedCallBack(e);
+    }, 30);
+  };
+  cards.click(clickedCallBack);
+  return this;
+};
+SuperHeroMindMap.prototype.resetGameVariables = function () {
+  // reset match check params
+  this.currentMatchableHash = "";
+  this.currentMatchableId = "";
+  this.slotsMatched = new Set();
+  this.matchesComplete = false;
+  this.matchedSlotHashes = new Set();
+  //reset rate params
+  this.moves = 0;
+  this.numberOfMatches = 0;
+  this.ratingDip = 0;
+  this.moveOnLastMatch = 0;
+  this.moveOnLastDip = 0;
+  this.shuffleAtWhim = false;
+  this.ratingNotified = false;
+  //reset score
+  this.userScore = 0;
+  this.maxScoreOnMatch = false;
+  //remove stale modal notifications
+  this.notificationMsg = "";
+  this.notificationCategory = "info";
+  //remove a request to the global object for animation frames if any
+  this.ticktock = window.cancelAnimationFrame(this.ticktock);
+  this.ticktock = false;
+  //reset the time difference helpers
+  this.time = 0;
+  this.gameBegun = false;
+  this.time_before = false;
+  this.panelTime = 360099;
+  this.timeOver = false;
+  //reset the move the deck was shuffled on
+  this.shuffledOnMove = 0;
+  return this;
+};
+SuperHeroMindMap.prototype.restart = function () {
+  //Relayout the game
+  const relayoutDeck = () => {
+    //reset the container for the deck
+    this.oContainer.empty();
+    setTimeout(() => {
+      this.oContainer.css({
+        "min-height": 0
+      });
+      //Repopulate the deck
+      this.populateDeck();
+      //Activate the click handlers for each card
+      return this.activate();
+    }, 999);
+  };
+  //Let the user see a spinning wheel for a while
+  setTimeout(relayoutDeck, 2001);
+  this.renderGameBusyState();
+  this.resetGameVariables();
+  //reset panels
+  this.resetPanel();
+  this.resetStatistics();
+  return this;
+};
+SuperHeroMindMap.prototype.populateDeck = function () {
+  //shuffle the deck for display later via layout
+  //copy over the slots generated via the Slot class, to a local "slots" property
+  this.shuffleDeck();
+  this.shuffleDeck();
   //loop over each available slot, print the card backwards onto the slot on deck
-  for (const slot of this.slot.slots) {
+  for (const oSlotMap of this.slots) {
+    const [id, slot] = oSlotMap;
     //create a card to display content, flipped or front
     const card = $("<article class='card'></article>");
     //TOTALLY AVOIDABLE CONTAINER
@@ -308,37 +399,11 @@ SuperHeroMindMap.prototype.addCards = function () {
   const width = this.oContainer.width();
   const height = this.oContainer.height();
   //Create and store the dimensions above, as a canvas property
-  const canvas = {
+  this.oCanvas = {
     width,
     height
   };
-  return this.oCanvas = canvas;
-};
-SuperHeroMindMap.prototype.deActivate = function () {
-  //copy locally, the local container property as a constant
-  const oContainer = this.oContainer;
-  //Extract all cards within the container deck, into a cards constant
-  const cards = oContainer.find("article.card");
-  //Deactivate click handlers, even on children, safe side
-  cards.off("click");
-  return cards.children()
-    .off("click");
-};
-SuperHeroMindMap.prototype.activate = function () {
-  //Copy locally, the local container property
-  const oContainer = this.oContainer;
-  //Extract all slotted cards into cards
-  const cards = oContainer.find("article.card");
-  //copy over the locally available / defined click handler,
-  //reset
-  //define a click handler
-  const clickedCallBack = (e) => {
-    return setTimeout(() => {
-      return this.clickedCallBack(e);
-    }, 30);
-  };
-  this.reset();
-  return cards.click(clickedCallBack);
+  return this;
 };
 SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
   //copy all essential decision makers from the card clicked
@@ -431,6 +496,8 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     //flip the card, count one move
     this.flip(card, slot);
     this.moves++;
+    this.gameBegun = (this.moves < 1) ? false : true;
+    const switchTimersOn = (this.moves == 1) ? this.startTickerTimers() : false;
     const oddMove = ((this.moves % 2) != 0);
     //if odd move, store the to be matched hash
     if (oddMove) {
@@ -468,24 +535,22 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
         setTimeout(onMismatch, 29);
       }
     }
-    if (this.gameBegun === false) {
-      this.gameBegun = true;
-      this.startTickerTimers();
-    }
     //on each click of a crad on deck, display the moves completed
     this.updateMoveCountOnPanels();
     //on each click, rate the user based on moves, matches
     this.rate();
     const shouldShuffle = this.isItTimetoShuffle();
     const gameWon = this.isTheGameWon();
-    const ratingTooLow = this.ratingDipBoundsReached();
+    const ratingTooLow = this.isTheGameRatingTooLow();
     const finishCondition = (gameWon || ratingTooLow);
-    const shuffleNow = (shouldShuffle && !finishCondition) ? this.randomShuffle() : false;
+    const shuffleNow = (shouldShuffle && !finishCondition) ? this.shuffleAway() : false;
     return (finishCondition && true) ? this.finish() : false;
   }
   return false;
 };
 SuperHeroMindMap.prototype.startTickerTimers = function () {
+  //is the game time limit reached?
+  const timeOver = this.isTheGameTimeLimitMet();
   //time this animation frame
   const time_now = Date.now();
   //time last animation frame
@@ -501,7 +566,6 @@ SuperHeroMindMap.prototype.startTickerTimers = function () {
   //from the inital value of 180000 milliseconds
   this.time += diff_in_time;
   this.panelTime -= diff_in_time;
-  const timeOver = this.gameTimeOver();
   //loop frames
   this.ticktock = window.requestAnimationFrame(() => {
     return this.startTickerTimers();
@@ -512,50 +576,6 @@ SuperHeroMindMap.prototype.startTickerTimers = function () {
     this.finish() :
     //count down/up timers
     this.tickTthemTimers();
-};
-SuperHeroMindMap.prototype.gameTimeOver = function () {
-  if (this.panelTime <= 0) {
-    this.notificationCategory = "error";
-    this.notificationMsg = "Game Over!! Replay anytime by clicking the replay game option on the panel below";
-    this.timeOver = true;
-  }
-  return (this.timeOver && true);
-};
-SuperHeroMindMap.prototype.reset = function () {
-  // reset match check params
-  this.currentMatchableHash = "";
-  this.currentMatchableId = "";
-  this.slotsMatched = new Set();
-  this.matchesComplete = false;
-  this.matchedSlotHashes = new Set();
-  //reset rate params
-  this.moves = 0;
-  this.numberOfMatches = 0;
-  this.ratingDip = 0;
-  this.moveOnLastMatch = 0;
-  this.moveOnLastDip = 0;
-  this.shuffleAtWhim = false;
-  this.ratingNotified = false;
-  //reset score
-  this.userScore = 0;
-  this.maxScoreOnMatch = false;
-  //remove stale modal notifications
-  this.notificationMsg = "";
-  this.notificationCategory = "info";
-  //reset panels
-  this.resetPanel();
-  this.resetStatistics();
-  //remove a request to the global object for animation frames if any
-  this.ticktock = window.cancelAnimationFrame(this.ticktock);
-  this.ticktock = false;
-  //reset the time difference helpers
-  this.time = 0;
-  this.gameBegun = false;
-  this.time_before = false;
-  this.panelTime = 360999;
-  this.timeOver = false;
-  //reset the move the deck was shuffled on
-  this.shuffledOnMove = 0;
 };
 SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
   //All text displaying containers on the game panel, need reset
@@ -599,46 +619,33 @@ SuperHeroMindMap.prototype.resetStatistics = function () {
   // - replay
   return this.oStatisticsContainer.hide();
 };
-SuperHeroMindMap.prototype.shuffleDeck = function () {
-  //Shuffle the Deck
-  //Grab all slots and their respective cards
-  const slots = this.slot.shuffleSlots();
-  //loop over available shuffled slots
-  //Store them all in the tracker for this play/hand
-  for (const slot of slots) {
-    this.slots.set(slot.id, slot);
-  }
-  return this.slots;
-};
 SuperHeroMindMap.prototype.flip = function (card, slot) {
   //grab the currently displayed content on the card in the slot on deck
   //toggle the view to the alternative content
   const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
   let content = slot[toggledContent];
+  const placeholder = card.find(".placeholder");
   //Reveals a Card on Slot
   const reveal = function () {
-    return card.find(".placeholder")
-      .fadeIn(5);
+    return placeholder.fadeIn(5);
   };
   //Flips a card
   //Just appends the toggled content above, to the card on slot
   const flip = function () {
-    card.find(".placeholder")
-      .children()
+    placeholder.children()
       .remove();
-    return card.find(".placeholder")
-      .empty()
+    return placeholder.empty()
       .append(content);
   };
   //hides a card
   const hide = function () {
-    return card.find(".placeholder")
-      .fadeOut(5);
+    return placeholder.fadeOut(5);
   };
   //Order : Hide , Then Flip, and finally, Reveal
   hide();
   flip();
   reveal();
+  return false;
 };
 SuperHeroMindMap.prototype.rate = function () {
   const moves = this.moves;
@@ -695,15 +702,107 @@ SuperHeroMindMap.prototype.rate = function () {
     setTimeout(alert, 110);
   }
   //define a menu of scoring parameters
-  const rateCard = {
+  return this.rateCard = {
     deltaHigh,
     deltaMoves,
     maxMovesDelta,
     cardsAvailable
   };
-  return this.rateCard = rateCard;
 };
-
+SuperHeroMindMap.prototype.score = function () {
+  //Arbitrary max points per match
+  const maxPointsPerMatch = 25;
+  //Initialize scoring parameters
+  let delta = 0;
+  let pointsThisMatch = 0;
+  let scoreThisMatch = 0;
+  //the rating the game is on at the moment
+  //(maxrating of 5 minus the dip in rating)
+  const currentRating = 3 - this.ratingDip;
+  //the dip in rating
+  //check if it is 0, and set it to be a minimum of 1, if it is
+  const dip = (this.ratingDip > 0) ? this.ratingDip : 1;
+  if (this.rateCard.deltaHigh) {
+    //delta becomes the number of moves over and above the max permissible moves
+    delta = this.rateCard.deltaMoves - this.rateCard.maxMovesDelta;
+    //points scored, are a deduction of the delta above from the max arbitray points to be awarded per match
+    pointsThisMatch = maxPointsPerMatch - delta;
+    //rating needs to be a factor
+    //also, the more the dip, the less the points => divide by dip
+    scoreThisMatch = currentRating * (pointsThisMatch / dip);
+  } else {
+    //delta becomes the number of moves left to exceed the max permissible moves
+    delta = this.rateCard.maxMovesDelta - this.rateCard.deltaMoves;
+    //No deductions here!
+    pointsThisMatch = maxPointsPerMatch;
+    //factor in the rating
+    //Since the user matched this one without exceeding max permissible Moves,
+    //the delta above, is the bonus
+    scoreThisMatch = (currentRating * pointsThisMatch) + delta;
+  }
+  scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
+  scoreThisMatch = (scoreThisMatch > 0) ? scoreThisMatch : 1;
+  //add score on this match to the game score
+  this.userScore += scoreThisMatch;
+  return scoreThisMatch;
+};
+SuperHeroMindMap.prototype.getSuperhero = function (id) {
+  const slot = this.slots.get(id);
+  const hash = slot.hash;
+  const oSuperhero = this.superHeroes.get(hash);
+  return oSuperhero;
+};
+SuperHeroMindMap.prototype.shuffleDeck = function () {
+  //Shuffle the Deck
+  //Grab all slots and their respective cards
+  const slots = this.slot.shuffleSlots();
+  //loop over available shuffled slots
+  //Store them all in the tracker for this play/hand
+  for (const slot of slots) {
+    this.slots.set(slot.id, slot);
+  }
+  return this.slots;
+};
+SuperHeroMindMap.prototype.shuffleAway = function () {
+  //set notification parameters
+  this.notificationCategory = "info";
+  this.notificationMsg = "Shuffling Deck";
+  //delay a blink for visual registers
+  return setTimeout(() => {
+    //Extract all slotted cards into cards
+    const cards = this.oContainer.find("article.card");
+    //notify the user, that the deck is being shuffled
+    this.notify();
+    //Delay this till the flipped cards have been flipped back, and then some more
+    //just wait a sec and some
+    setTimeout(() => {
+      this.oContainer.effect("shake", {
+        times: 5,
+        direction: "right"
+      }, "fast");
+      //shuffle well
+      this.shuffleDeck();
+      this.shuffleDeck();
+      //layout the shuffled deck
+      cards.each((cardIndex, card) => {
+        const id = $(card)
+          .attr("id");
+        const slot = this.slots.get(id);
+        const order = slot.order;
+        $(card)
+          .css({
+            "order": order,
+            "display": "block"
+          })
+          .fadeOut()
+          .fadeIn();
+      });
+      //unset the shuffle parameter and set it to false, so  the next shuffle happens later
+      //and not on the next click
+      return this.shuffleAtWhim = false;
+    }, 1800);
+  }, 50);
+};
 SuperHeroMindMap.prototype.isItTimetoShuffle = function () {
   //How many moves have been registered on the counter since the last shuffle?
   const deltaShuffle = this.moves - this.shuffledOnMove;
@@ -745,46 +844,15 @@ SuperHeroMindMap.prototype.isItTimetoShuffle = function () {
   this.shuffledOnMove = (this.shuffleAtWhim) ? this.moves : this.shuffledOnMove;
   return this.shuffleAtWhim;
 };
-SuperHeroMindMap.prototype.randomShuffle = function () {
-  //delay a blink for visual registers
-  setTimeout(() => {
-    //Extract all slotted cards into cards
-    const cards = this.oContainer.find("article.card");
-    //notify the user, that the deck is being shuffled
-    this.notify();
-    //Delay this till the flipped cards have been flipped back, and then some more
-    //just wait a sec and some
-    setTimeout(() => {
-      this.oContainer.effect("shake", {
-        times: 5,
-        direction: "right"
-      }, "fast");
-      //shuffle well
-      this.shuffleDeck();
-      this.shuffleDeck();
-      //layout the shuffled deck
-      cards.each((cardIndex, card) => {
-        const id = $(card)
-          .attr("id");
-        const slot = this.slots.get(id);
-        const order = slot.order;
-        $(card)
-          .css({
-            "order": order,
-            "display": "block"
-          })
-          .fadeOut()
-          .fadeIn();
-      });
-      //unset the shuffle parameter and set it to false, so  the next shuffle happens later
-      //and not on the next click
-      return this.shuffleAtWhim = false;
-    }, 1800);
-  }, 50);
-  this.notificationCategory = "info";
-  this.notificationMsg = "Shuffling Deck";
+SuperHeroMindMap.prototype.isTheGameTimeLimitMet = function () {
+  if (this.panelTime <= 0) {
+    this.notificationCategory = "error";
+    this.notificationMsg = "Game Over!! Replay anytime by clicking the replay game option on the panel below";
+    this.timeOver = true;
+  }
+  return (this.timeOver && true);
 };
-SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
+SuperHeroMindMap.prototype.isTheGameRatingTooLow = function () {
   /*if (this.ratingDip > 2) {
     this.notificationMsg = "Oops!!! That is all the number of moves allowed. Please hit replay to play again."
     this.notificationCategory = "error";
@@ -793,42 +861,8 @@ SuperHeroMindMap.prototype.ratingDipBoundsReached = function () {
   //disable end of play due to rating dip
   return false;
 };
-SuperHeroMindMap.prototype.score = function () {
-  //Arbitrary max points per match
-  const maxPointsPerMatch = 25;
-  //Initialize scoring parameters
-  let delta = 0;
-  let pointsThisMatch = 0;
-  let scoreThisMatch = 0;
-  //the rating the game is on at the moment
-  //(maxrating of 5 minus the dip in rating)
-  const currentRating = 3 - this.ratingDip;
-  //the dip in rating
-  //check if it is 0, and set it to be a minimum of 1, if it is
-  const dip = (this.ratingDip > 0) ? this.ratingDip : 1;
-  if (this.rateCard.deltaHigh) {
-    //delta becomes the number of moves over and above the max permissible moves
-    delta = this.rateCard.deltaMoves - this.rateCard.maxMovesDelta;
-    //points scored, are a deduction of the delta above from the max arbitray points to be awarded per match
-    pointsThisMatch = maxPointsPerMatch - delta;
-    //rating needs to be a factor
-    //also, the more the dip, the less the points => divide by dip
-    scoreThisMatch = currentRating * (pointsThisMatch / dip);
-  } else {
-    //delta becomes the number of moves left to exceed the max permissible moves
-    delta = this.rateCard.maxMovesDelta - this.rateCard.deltaMoves;
-    //No deductions here!
-    pointsThisMatch = maxPointsPerMatch;
-    //factor in the rating
-    //Since the user matched this one without exceeding max permissible Moves,
-    //the delta above, is the bonus
-    scoreThisMatch = (currentRating * pointsThisMatch) + delta;
-  }
-  scoreThisMatch = Math.ceil(Math.abs(scoreThisMatch));
-  scoreThisMatch = (scoreThisMatch > 0) ? scoreThisMatch : 1;
-  //add score on this match to the game score
-  this.userScore += scoreThisMatch;
-  return scoreThisMatch;
+SuperHeroMindMap.prototype.isTheGameWon = function () {
+  return (this.matchesComplete && true);
 };
 SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
   //gather the high scoring slot, and its matching slots
@@ -844,78 +878,6 @@ SuperHeroMindMap.prototype.setHighScoringMatch = function (...highs) {
   const highScoreText = `<h2>${name} / ${alterEgo} ( + ${score} )</h2>`;
   return this.oStatsHighScoreContainer.empty()
     .append(highScoreText);
-};
-SuperHeroMindMap.prototype.getSuperhero = function (id) {
-  const slot = this.slots.get(id);
-  const hash = slot.hash;
-  const oSuperhero = this.superHeroes.get(hash);
-  return oSuperhero;
-};
-SuperHeroMindMap.prototype.notify = function () {
-  //Empty any stale Notification modals
-  this.oModalContainer.children()
-    .remove();
-  //Create a new modal
-  const oNotifyCard = document.createElement("notify-card");
-  //Categorize the message as an:
-  ///////////////////////////////////////ERROR
-  //////////////////////////////////SUCCESS OR
-  ////////////////////////////////////////OTHER
-  const categoryAttributed = oNotifyCard.setAttribute(this.notificationCategory, true);
-  //Add the new notification message
-  const oTextContainer = document.createElement("DIV");
-  oTextContainer.setAttribute("id", "notification-box");
-  const innerHTML = `<span class="notification-text">${this.notificationMsg}</span>`;
-  oTextContainer.innerHTML = innerHTML;
-  oNotifyCard.appendChild(oTextContainer);
-  //Pop Up Notify
-  this.oModalContainer.append(oNotifyCard);
-};
-SuperHeroMindMap.prototype.updateFinishParams = function () {
-  //number of cards still unmatched
-  const cardsAvailable = this.slots.size - this.slotsMatched.size;
-  //Is the game over? are all superheroes matched to their respective alter egoes?
-  const matchesComplete = (cardsAvailable === 0) && true;
-  this.matchesComplete = matchesComplete;
-  //If all matches are done, set a congratulatory message
-  //set the notification criteria
-  if (this.matchesComplete) {
-    this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
-    You can now view some cool statistics, or, meh! just hit replay`;
-    this.notificationCategory = "cmesg";
-    $(".scorecard-timer-header")
-      .empty()
-      .html("Game Won In");
-  }
-};
-SuperHeroMindMap.prototype.isTheGameWon = function () {
-  return (this.matchesComplete && true);
-};
-SuperHeroMindMap.prototype.finish = function () {
-  this.ticktock = window.cancelAnimationFrame(this.ticktock);
-  //Delay for visual effects
-  setTimeout(() => {
-    //Reset the game panel displaying scores and moves
-    //Do not add stars until the game is over - results in more than 5 star ratings
-    this.resetPanel(true);
-    //reset the min dimensions of the deck container, to 0, as we are hiding it for stats to take its place
-    //then, empty the deck, make space for statistics
-    this.oContainer.css({
-        "min-height": 0,
-        "height": "auto",
-        "min-width": 0,
-        "width": "auto"
-      })
-      .empty();
-    //then , finally, load the stats
-    return this.showStatistics();
-  }, 1500);
-  //notify the user, that he has either failed, or won
-  setTimeout(() => {
-    return this.notify();
-  }, 1000);
-  //while the finish is delayed, show the spinner for visual effects
-  return this.emptyDeck();
 };
 SuperHeroMindMap.prototype.updateMoveCountOnPanels = function () {
   //Display the number of moves on both the game panel while in play
@@ -938,7 +900,7 @@ SuperHeroMindMap.prototype.updateScoreOnPanels = function () {
 };
 SuperHeroMindMap.prototype.tickTthemTimers = function () {
   // Using the Date constructor,convert time counting in milliseconds, to datetime post epoch(January 1, 1970, 00:00:00.000)
-  // new Date(10) => 10 ms since epoch
+  // new Date(10) => 10 ms since epoch(January 1, 1970, 00:00:00.010)
   // extract time from the resulting datetime string
   let readableStatsTime = new Date(this.time)
     .toISOString()
@@ -949,7 +911,7 @@ SuperHeroMindMap.prototype.tickTthemTimers = function () {
   //update time counts
   this.oClockContainer.empty()
     .html(`<h2>${readablePanelTime}</h2>`);
-  this.oScorecardClockContainer.empty()
+  return this.oScorecardClockContainer.empty()
     .html(`<h2>${readableStatsTime}</h2>`);
 };
 SuperHeroMindMap.prototype.showStatistics = function () {
@@ -986,9 +948,73 @@ SuperHeroMindMap.prototype.showStatistics = function () {
   }
   unmatchedSuperheroes.clear();
   //Important! Show the stats after the player finishes
-  this.oStatisticsContainer.fadeIn(1505);
+  return this.oStatisticsContainer.fadeIn(1505);
 };
-SuperHeroMindMap.prototype.emptyDeck = function () {
+SuperHeroMindMap.prototype.updateFinishParams = function () {
+  //number of cards still unmatched
+  const cardsAvailable = this.slots.size - this.slotsMatched.size;
+  //Is the game over? are all superheroes matched to their respective alter egoes?
+  const matchesComplete = (cardsAvailable === 0) && true;
+  this.matchesComplete = matchesComplete;
+  //If all matches are done, set a congratulatory message
+  //set the notification criteria
+  if (this.matchesComplete) {
+    this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
+    You can now view some cool statistics, or, meh! just hit replay`;
+    this.notificationCategory = "cmesg";
+    $(".scorecard-timer-header")
+      .empty()
+      .html("Game Won In");
+  }
+  return false;
+};
+SuperHeroMindMap.prototype.finish = function () {
+  //Delay for visual effects
+  setTimeout(() => {
+    //Reset the game panel displaying scores and moves
+    //Do not add stars until the game is over - results in more than 5 star ratings
+    this.resetPanel(true);
+    //reset the min dimensions of the deck container, to 0, as we are hiding it for stats to take its place
+    //then, empty the deck, make space for statistics
+    this.oContainer.css({
+        "min-height": 0,
+        "height": "auto",
+        "min-width": 0,
+        "width": "auto"
+      })
+      .empty();
+    //then , finally, load the stats
+    return this.showStatistics();
+  }, 1500);
+  //notify the user, that he has either failed, or won
+  setTimeout(() => {
+    return this.notify();
+  }, 1000);
+  //while the finish is delayed, show the spinner for visual effects
+  this.renderGameBusyState();
+  return this.ticktock = window.cancelAnimationFrame(this.ticktock);
+};
+SuperHeroMindMap.prototype.notify = function () {
+  //Empty any stale Notification modals
+  this.oModalContainer.children()
+    .remove();
+  //Create a new modal
+  const oNotifyCard = document.createElement("notify-card");
+  //Categorize the message as an:
+  ///////////////////////////////////////ERROR
+  //////////////////////////////////SUCCESS OR
+  ////////////////////////////////////////OTHER
+  const categoryAttributed = oNotifyCard.setAttribute(this.notificationCategory, true);
+  //Add the new notification message
+  const oTextContainer = document.createElement("DIV");
+  oTextContainer.setAttribute("id", "notification-box");
+  const innerHTML = `<span class="notification-text">${this.notificationMsg}</span>`;
+  oTextContainer.innerHTML = innerHTML;
+  oNotifyCard.appendChild(oTextContainer);
+  //Pop Up Notify
+  return this.oModalContainer.append(oNotifyCard);
+};
+SuperHeroMindMap.prototype.renderGameBusyState = function () {
   //Create a visually engaging spinning wheel
   const cog = $('<div class="shuffle" id="spinner-cog"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
   this.deActivate();
@@ -996,7 +1022,7 @@ SuperHeroMindMap.prototype.emptyDeck = function () {
   //Append spinner
   //Add a timeout delay, because, after the last winning match, the spinner and the shuffle
   //hijack the score puff effect
-  setTimeout(() => {
+  return setTimeout(() => {
     this.oContainer.children()
       .each(function () {
         return this.remove();
@@ -1010,26 +1036,4 @@ SuperHeroMindMap.prototype.emptyDeck = function () {
     return $("#spinner-cog")
       .focus();
   }, 1005);
-};
-SuperHeroMindMap.prototype.restart = function () {
-  this.emptyDeck();
-  //Relayout the game
-  const relayoutDeck = () => {
-    //reset the container for the deck
-    this.oContainer.empty();
-    //Shuffle the deck
-    this.shuffleDeck();
-    //The shuffle takes time. give it some time
-    setTimeout(() => {
-      this.oContainer.css({
-        "min-height": 0
-      });
-      //Repopulate the deck
-      this.addCards();
-      //Activate the click handlers for each card
-      return this.activate();
-    }, 999);
-  };
-  //Let the user see a spinning wheel for a while
-  setTimeout(relayoutDeck, 2100);
 };
