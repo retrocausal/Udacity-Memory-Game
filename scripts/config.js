@@ -98,8 +98,7 @@ let oGamebuilders = new Map();
   SuperheroMindMapBuilder.prototype.play = function () {
     this.oGame.resetGameVariables()
       .build()
-      .layout()
-      .activate();
+      .layout();
     return this;
   };
   return oGamebuilders.set('SuperheroMindMapBuilder', SuperheroMindMapBuilder);
