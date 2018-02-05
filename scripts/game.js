@@ -195,12 +195,12 @@ Slot.prototype.shuffleSlots = function () {
 };
 
 /*
- ** @name SuperHeroMindMap
- ** @Description generate the game! Build its behaviours
- ** @params
- ********** config : Replacement for the default argument list. The first param is assumed to be the configuration
- parameter. This is ideally an array of hero objects
- */
+** @name SuperHeroMindMap
+** @Description generate the game! Build its behaviours
+** @params
+********** config : Replacement for the default argument list. The first param is assumed to be the configuration
+parameter. This is ideally an array of hero objects
+*/
 
 const SuperHeroMindMap = function (...config) {
   const [heroes] = config;
@@ -279,21 +279,25 @@ SuperHeroMindMap.prototype.deActivate = function () {
     .off("click");
   return this;
 };
-SuperHeroMindMap.prototype.activate = function () {
-  //Copy locally, the local container property
-  const oContainer = this.oContainer;
-  //Extract all slotted cards into cards
-  const cards = oContainer.find("article.card");
-  //copy over the locally available / defined click handler,
-  //reset
+SuperHeroMindMap.prototype.activate = function (card) {
   //define a click handler
   const clickedCallBack = (e) => {
     return setTimeout(() => {
       return this.clickedCallBack(e);
     }, 30);
   };
-  cards.click(clickedCallBack);
-  return this;
+  return (!card || card == null) ? false : card.click(clickedCallBack);
+};
+SuperHeroMindMap.prototype.populateCard = function (content, uiHandle) {
+  if (content && uiHandle) {
+    return uiHandle.empty()
+      .append(content);
+  }
+  return false;
+};
+SuperHeroMindMap.prototype.promise = function (...oPromiseOptions) {
+  const [resolver] = oPromiseOptions;
+  return new Promise(resolver);
 };
 SuperHeroMindMap.prototype.resetGameVariables = function () {
   // reset match check params
@@ -310,6 +314,7 @@ SuperHeroMindMap.prototype.resetGameVariables = function () {
   this.moveOnLastDip = 0;
   this.shuffleAtWhim = false;
   this.ratingNotified = false;
+  this.rateCard = null;
   //reset score
   this.userScore = 0;
   this.maxScoreOnMatch = false;
@@ -339,9 +344,7 @@ SuperHeroMindMap.prototype.restart = function () {
         "min-height": 0
       });
       //Repopulate the deck
-      this.populateDeck();
-      //Activate the click handlers for each card
-      return this.activate();
+      return this.populateDeck();
     }, 999);
   };
   //Let the user see a spinning wheel for a while
@@ -361,8 +364,6 @@ SuperHeroMindMap.prototype.populateDeck = function () {
   //loop over each available slot, print the card backwards onto the slot on deck
   for (const oSlotMap of this.slot.slots) {
     const [id, slot] = oSlotMap;
-    //create a card to display content, flipped or front
-    const card = $("<article class='card'></article>");
     //TOTALLY AVOIDABLE CONTAINER
     //CAN REMOVE ONCE JQUERY MATURES ITS UI
     //JQ creates / or rather, CLONES (WHY?????) an entire node as a placeholder for UI effects
@@ -376,30 +377,50 @@ SuperHeroMindMap.prototype.populateDeck = function () {
         display: "block",
         width: "100%"
       });
-    //Assign an ID, to the card
-    //Empty to begin
-    //Assign the css display order and display the card as a block with the flip side in view
-    card.attr("id", slot.id)
-      .empty()
-      .append(unnecessaryContainerForSHODDYjQueryUI);
-
-    card.find(".placeholder")
-      .append(slot.flippedContent);
-    card.css({
-      order: slot.order,
-      display: "block"
-    });
-    //Append the card onto the slot on deck
-    this.oContainer.append(card);
+    const asyncGetRenderReady = this.promise(
+      (resolve, reject) => {
+        //create a card to display content, flipped or front
+        const card = $("<article class='card'></article>");
+        //Assign an ID, to the card, and empty it to begin
+        //Assign the css display order and display the card as a block with the flip side in view
+        //append the placeholder for JQ UI
+        card.attr("id", slot.id)
+          .css({
+            order: slot.order,
+            display: "block"
+          })
+          .empty()
+          .append(unnecessaryContainerForSHODDYjQueryUI);
+        //Append the card onto the slot on deck
+        this.oContainer.append(card);
+        //Add the card and the JQ Specific UI Handle , to the slot Object
+        //This would mean, time benefits by avoinding a JQ $(#/.<selector) lookup later.
+        slot.card = card;
+        slot.uiHandle = unnecessaryContainerForSHODDYjQueryUI;
+        const resolved = this.activate(card);
+        if (!resolved) {
+          reject(`Could not activate Card on slot ${slot.id}`);
+        }
+        resolve(`Activated Card on slot ${slot.id}`);
+      }
+    );
+    //Perf Refactor - Chrome displayed a "VIOLATION" warning on the console
+    //Apparently, Appending a webcomponent, to the DOM Node using JQ, takes
+    /*FOREVVVER*/
+    //Hence, Async the append webcomponent to slot functionality
+    //Do all the render readiness work , THEN, append
+    asyncGetRenderReady.then(success => {
+      this.populateCard(slot.flippedContent, unnecessaryContainerForSHODDYjQueryUI);
+      //Calculate Deck Dimensions
+      const width = this.oContainer.width();
+      const height = this.oContainer.height();
+      //Create and store the dimensions above, as a canvas property
+      return this.oCanvas = {
+        width,
+        height
+      };
+    }, err => console.log(err));
   }
-  //Calculate Deck Dimensions
-  const width = this.oContainer.width();
-  const height = this.oContainer.height();
-  //Create and store the dimensions above, as a canvas property
-  this.oCanvas = {
-    width,
-    height
-  };
   return this;
 };
 SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
@@ -408,26 +429,28 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
   // also, the user can only click on the content, and not the card itself
   // the delegate to the content clicked on, is the card
   const id = eCard.delegateTarget.id;
-  const card = $("#" + id);
+  //const card = $("#" + id);
   //Determine and copy the currently pressed slot containing the card containing the Polymer
   const slot = this.slot.slots.get(id);
+  const card = slot.card;
   //Copy the hash on slot, for matching purposes
   const hash = slot.hash;
   //Define a mismatch handler
   const onMismatch = () => {
     //Previously flipped card, determined by the pointer to the slot referenced by an odd move
     // and also, its slot
-    const prevCard = $("#" + this.currentMatchableId);
+    //const prevCard = $("#" + this.currentMatchableId);
     const prevSlot = this.slot.slots.get(this.currentMatchableId);
+    const prevCard = prevSlot.card;
     //Shake them
     //Flip them
-    prevCard.find(".placeholder")
+    prevSlot.uiHandle
       .effect("shake", {
         times: 5,
         distance: 5,
         direction: "left"
       }, "fast");
-    card.find(".placeholder")
+    slot.uiHandle
       .effect("shake", {
         times: 5,
         distance: 5,
@@ -443,18 +466,18 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
     this.currentMatchableHash = "";
   };
   //Define a per match visual effects handler
-  const puffScore = (score) => {
+  const onMatch = (score) => {
     //remove any stale score containers
     $(".puff-of-score")
       .remove();
     //identify the to be matched cards
-    const prevCard = $("#" + this.currentMatchableId);
     const prevSlot = this.slot.slots.get(this.currentMatchableId);
+    const prevCard = prevSlot.card;
     //puff the two matching cards
-    card.find(".placeholder")
+    slot.uiHandle
       .effect("puff")
       .fadeIn(5);
-    prevCard.find(".placeholder")
+    prevSlot.uiHandle
       .effect("puff")
       .fadeIn(5);
     //add a new score on this match container
@@ -522,7 +545,7 @@ SuperHeroMindMap.prototype.clickedCallBack = function (eCard) {
           this.setHighScoringMatch(id, matchingId, score);
         }
         //call in some visual effects
-        puffScore(score);
+        onMatch(score);
         //Is the game complete with all cards matched?
         this.updateFinishParams();
       } else {
@@ -621,7 +644,7 @@ SuperHeroMindMap.prototype.flip = function (card, slot) {
   //toggle the view to the alternative content
   const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
   let content = slot[toggledContent];
-  const placeholder = card.find(".placeholder");
+  const placeholder = slot.uiHandle;
   //Reveals a Card on Slot
   const reveal = function () {
     return placeholder.fadeIn(5);
@@ -751,7 +774,6 @@ SuperHeroMindMap.prototype.getSuperhero = function (id) {
 };
 SuperHeroMindMap.prototype.shuffleDeck = function () {
   //Shuffle the Deck
-  //Grab all slots and their respective cards
   return this.slot.shuffleSlots();
 };
 SuperHeroMindMap.prototype.shuffleAway = function () {
@@ -845,8 +867,8 @@ SuperHeroMindMap.prototype.isTheGameTimeLimitMet = function () {
 };
 SuperHeroMindMap.prototype.isTheGameRatingTooLow = function () {
   /*if (this.ratingDip > 2) {
-    this.notificationMsg = "Oops!!! That is all the number of moves allowed. Please hit replay to play again."
-    this.notificationCategory = "error";
+  this.notificationMsg = "Oops!!! That is all the number of moves allowed. Please hit replay to play again."
+  this.notificationCategory = "error";
   }
   return (this.ratingDip > 2);*/
   //disable end of play due to rating dip
@@ -952,7 +974,7 @@ SuperHeroMindMap.prototype.updateFinishParams = function () {
   //set the notification criteria
   if (this.matchesComplete) {
     this.notificationMsg = `You have mapped all Superheroes, to their alter egoes!!!
-    You can now view some cool statistics, or, meh! just hit replay`;
+You can now view some cool statistics, or, meh! just hit replay`;
     this.notificationCategory = "cmesg";
     $(".scorecard-timer-header")
       .empty()
@@ -1009,22 +1031,23 @@ SuperHeroMindMap.prototype.notify = function () {
 SuperHeroMindMap.prototype.renderGameBusyState = function () {
   //Create a visually engaging spinning wheel
   const cog = $('<div class="shuffle" id="spinner-cog"><h1><span class="fa fa-cog fa-spin fa-3x"></span></h1></div>');
+  //switch off click handlers everywhere
   this.deActivate();
   //Empty the Deck
   //Append spinner
-  //Add a timeout delay, because, after the last winning match, the spinner and the shuffle
+  //Add a timeout delay, because, after the last winning match, the spinner and the shuffle,
   //hijack the score puff effect
   return setTimeout(() => {
-    this.oContainer.children()
-      .each(function () {
-        return this.remove();
-      });
     //Set the Deck's dimensions to be retained to what they were before emptying it's content
     //Display that spinning wheel indicating, the cards are being shuffled, and a new game is being initialized
     this.oContainer.css({
         "min-height": this.oCanvas.height
       })
-      .append(cog);
+      .children()
+      .each(function () {
+        return this.remove();
+      });
+    this.oContainer.append(cog);
     return $("#spinner-cog")
       .focus();
   }, 1005);
