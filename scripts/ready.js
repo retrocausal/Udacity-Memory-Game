@@ -11,9 +11,9 @@ window.addEventListener('WebComponentsReady', (W) => {
   const docLoaded = () => {
     let polly;
     if (document.readyState === "complete") {
+      polly = window.cancelAnimationFrame(polly);
       //On doc ready, blink and play
-      setTimeout(play, 21);
-      return polly = window.cancelAnimationFrame(polly);
+      return play();
     }
     //Keep polling polly!
     return polly = window.requestAnimationFrame(() => {
