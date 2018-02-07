@@ -6,19 +6,13 @@ window.addEventListener('WebComponentsReady', (W) => {
     new Game()
       .play();
     return oGamebuilders.delete('SuperheroMindMapBuilder');
-  }; //Sometimes, because webcomponents load quicker (No Idea how to predict the sequence of loads)
-  //we need to check if doc parsing has finished within
-  const docLoaded = () => {
-    let polly;
-    if (document.readyState === "complete") {
-      polly = window.cancelAnimationFrame(polly);
-      //On doc ready, blink and play
-      return play();
-    }
-    //Keep polling polly!
-    return polly = window.requestAnimationFrame(() => {
-      return docLoaded();
-    });
   };
-  return docLoaded();
+  const playWhenReady = () => {
+    document.onreadystatechange = function () {
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        play();
+      }
+    }
+  };
+  return (document.readyState === 'interactive' || document.readyState === 'complete') ? play() : playWhenReady();
 });

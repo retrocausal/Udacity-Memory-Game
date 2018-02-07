@@ -147,10 +147,10 @@
       id
     };
     const toggle = function () {
-      return slot.contentPointer = (slot.contentPointer == "rear") ? "main" : "rear";
+      return slot.contentPointer = (slot.contentPointer == "rear") ? "front" : "rear";
     };
     const getContent = function (pointer) {
-      return (pointer == "main") ? slot.content : slot.flippedContent;
+      return (pointer == "front") ? slot.content : slot.flippedContent;
     };
     slot.toggle = toggle;
     slot.getContent = getContent;
@@ -310,7 +310,7 @@
     this.time = 0;
     this.gameBegun = false;
     this.time_before = false;
-    this.panelTime = 360099;
+    this.panelTime = 360900;
     this.timeOver = false;
     //reset the move the deck was shuffled on
     this.shuffledOnMove = 0;
@@ -577,8 +577,6 @@
     return false;
   };
   SuperHeroMindMap.prototype.startTickerTimers = function () {
-    //is the game time limit reached?
-    const timeOver = this.isTheGameTimeLimitMet();
     //time this animation frame
     const time_now = Date.now();
     //time last animation frame
@@ -593,17 +591,24 @@
     //Also, the time to count down on the panel is the deduction of time difference between animation frames
     //from the inital value of 180000 milliseconds
     this.time += diff_in_time;
-    this.panelTime -= diff_in_time;
-    //loop frames
-    this.ticktock = window.requestAnimationFrame(() => {
-      return this.startTickerTimers();
-    });
+    this.panelTime -= diff_in_time; //loop frames
+    const nextFrame = () => {
+      this.ticktock = window.requestAnimationFrame(() => {
+        this.tickTthemTimers();
+        return this.startTickerTimers();
+      });
+    };
+    const finish = () => {
+      this.ticktock = window.cancelAnimationFrame(this.ticktock);
+      return this.finish();
+    }; //is the game time limit reached?
+    const timeOver = this.isTheGameTimeLimitMet();
     return (timeOver && true) ?
       //if time is up, stop the game
       //show stats
-      this.finish() :
+      finish() :
       //count down/up timers
-      this.tickTthemTimers();
+      nextFrame();
   };
   SuperHeroMindMap.prototype.resetPanel = function (gameOver) {
     //All text displaying containers on the game panel, need reset
@@ -1014,8 +1019,7 @@
       return this.notify();
     }, 1000);
     //while the finish is delayed, show the spinner for visual effects
-    this.renderGameBusyState();
-    return this.ticktock = window.cancelAnimationFrame(this.ticktock);
+    return this.renderGameBusyState();
   };
   SuperHeroMindMap.prototype.notify = function () {
     //Empty any stale Notification modals
