@@ -94,6 +94,7 @@ img {
   -webkit-animation-iteration-count: infinite;
   animation-iteration-count: infinite;
 }
+
 @-webkit-keyframes spin {
   from {
     -webkit-transform: rotate(0deg);
@@ -105,6 +106,7 @@ img {
     transform: rotate(359.99deg);
   }
 }
+
 @keyframes spin {
   from {
     -webkit-transform: rotate(0deg);
@@ -116,6 +118,7 @@ img {
     transform: rotate(359.99deg);
   }
 }
+
 @-webkit-keyframes reverse {
   from {
     -webkit-transform: rotate(360deg);
@@ -127,6 +130,7 @@ img {
     transform: rotate(0deg);
   }
 }
+
 @keyframes reverse {
   from {
     -webkit-transform: rotate(360deg);
@@ -570,4 +574,98 @@ superhero-card {
 .credit-image {
   max-width: 100%;
   width: 150px;
+}
+@media screen and (min-width:765px) {
+  .deck-space,
+  .meta,
+  .statistics {
+    width: 83vw;
+  }
+
+  .card {
+    width: 25%;
+    min-width: 25%;
+    max-width: 25%;
+  }
+
+  .clock,
+  .moves,
+  .points,
+  .ratings,
+  .replay {
+    width: 50%;
+    max-width: 50%;
+    min-width: 50%;
+  }
+
+  .shuffle {
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    top: 45%;
+  }
+
+  .reload {
+    margin-top: 0.51rem;
+  }
+
+  .highest-score,
+  .highest-scoring-match,
+  .matches,
+  .mismatches,
+  .scorecard-clock,
+  .scorecard-game-score,
+  .scorecard-moves,
+  .scorecard-number-of-moves,
+  .scorecard-rating,
+  .scorecard-stop-clock,
+  .scorecard-total-score,
+  .scorecard-user-rating {
+    width: 50%;
+    max-width: 50%;
+    min-width: 50%;
+  }
+
+  .highest-score-header,
+  .scorecard-moves-header,
+  .scorecard-rating-header,
+  .scorecard-timer-header,
+  .scorecard-total-score-header {
+    text-decoration: none;
+  }
+
+  .matches,
+  .mismatches {
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+  }
+
+  .instructions-list {
+    width: 50%;
+  }
+}
+
+@media screen and (min-width:1020px) {
+  .deck-space,
+  .meta,
+  .statistics {
+    width: 75vw;
+  }
+
+  .card {
+    width: calc(75vw / 6);
+    min-width: calc(75vw / 6);
+    max-width: calc(75vw / 6);
+  }
+
+  .clock,
+  .moves,
+  .points,
+  .ratings,
+  .replay {
+    width: 33.33%;
+    max-width: 33.33%;
+    min-width: 33.33%;
+  }
 }
