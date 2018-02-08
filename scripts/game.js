@@ -128,32 +128,35 @@
   //define the Slot prototype
   Slot.prototype.push = function (content, hash) {
     const order = this.slots.size || 0;
-    const flippedContent = new flipCard({
+    const contentPointer = "rear";
+    const id = "slot" + order;
+    let slot = {
+      order,
+      hash,
+      id,
+      content,
+      contentPointer,
+      get _content() {
+        return (this.contentPointer == "front") ? this.content : this._flippedContent;
+      },
+      toggle() {
+        return this.contentPointer = (this.contentPointer == "rear") ? "front" : "rear";
+      },
+      get _flippedContent() {
+        return this.flippedContent;
+      },
+      set _flippedContent(oBuilder) {
+        return this.flippedContent = new flipCard(oBuilder);
+      }
+    };
+    slot._flippedContent = {
       name: "DC Multiverse",
       cover: {
         src: this.assetSrc + "dcuniverse",
         format: "jpg",
         alt: "rear face of the card on deck, showing a picture of the dc multiverse"
       }
-    });
-    const contentPointer = "rear";
-    const id = "slot" + order;
-    let slot = {
-      content,
-      order,
-      hash,
-      contentPointer,
-      flippedContent,
-      id
     };
-    const toggle = function () {
-      return slot.contentPointer = (slot.contentPointer == "rear") ? "front" : "rear";
-    };
-    const getContent = function (pointer) {
-      return (pointer == "front") ? slot.content : slot.flippedContent;
-    };
-    slot.toggle = toggle;
-    slot.getContent = getContent;
     return this.slots.set(id, slot);
   };
   Slot.prototype.shuffleSlots = function () {
@@ -405,7 +408,7 @@
     return (!slot || slot == null) ? false : slot.card.click(clickedCallBack);
   };
   SuperHeroMindMap.prototype.populateSlot = function (slot) {
-    const content = slot.getContent(slot.contentPointer);
+    const content = slot._content;
     return (!slot || slot == null) ? false : () => {
       slot.uiHandle.empty()
         .append(content);
@@ -655,9 +658,8 @@
   SuperHeroMindMap.prototype.flip = function (slot) {
     //grab the currently displayed content on the card in the slot on deck
     //toggle the view to the alternative content
-    //const toggledContent = (slot.toggle() == "rear") ? "flippedContent" : "content";
     slot.toggle();
-    const content = slot.getContent(slot.contentPointer);
+    const content = slot._content;
     const placeholder = slot.uiHandle;
     //Reveals a Card on Slot
     const reveal = function () {
