@@ -313,7 +313,7 @@
     this.time = 0;
     this.gameBegun = false;
     this.time_before = false;
-    this.panelTime = 360900;
+    this.panelTime = 240900;
     this.timeOver = false;
     //reset the move the deck was shuffled on
     this.shuffledOnMove = 0;
@@ -606,7 +606,7 @@
       return this.finish();
     }; //is the game time limit reached?
     const timeOver = this.isTheGameTimeLimitMet();
-    return (timeOver && true) ?
+    return (timeOver) ?
       //if time is up, stop the game
       //show stats
       finish() :
@@ -910,7 +910,7 @@
   };
   SuperHeroMindMap.prototype.updateMoveCountOnPanels = function () {
     //Display the number of moves on both the game panel while in play
-    //And, the stats panel for display post finish either by exhaustion of moves, or a win
+    //And, the stats panel for display post finish either by exhaustion of time, or a win
     this.oScorecardMovesContainer.empty()
       .append(`<h2>${this.moves}</h2>`);
     return this.oMovesContainer.empty()
@@ -1020,6 +1020,8 @@
     setTimeout(() => {
       return this.notify();
     }, 1000);
+    if (this.ticktock)
+      this.ticktock = window.cancelAnimationFrame(this.ticktock);
     //while the finish is delayed, show the spinner for visual effects
     return this.renderGameBusyState();
   };
